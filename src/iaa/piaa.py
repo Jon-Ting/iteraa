@@ -1,6 +1,7 @@
-from os import listdir
+from os import mkdir, listdir
 from os.path import isfile
 import pickle
+from subprocess import run
 import sys
 from time import time
 
@@ -10,7 +11,7 @@ from sklearn.metrics import explained_variance_score
 from sklearn.model_selection import KFold
 from spams import archetypalAnalysis
 
-from iaa.constants import RANDOM_STATE, NUM_JOBS, PALETTE, DPI, SUBSETS_PICKLES_PATH, OUTPUTS_PICKLES_PATH
+from iaa.constants import RANDOM_STATE, NUM_JOBS, PALETTE, DPI, SUBSETS_PICKLES_PATH, OUTPUTS_PICKLES_PATH, JOBSCRIPTS_DIR_PATH
 from iaa.iaa import ArchetypalAnalysis
 
 
@@ -149,5 +150,36 @@ def fitPIAA(X, nArchetypes, numSubset, dataName, outputsPicklesPath=OUTPUTS_PICK
     return AA
 
 
+def submitAAjobs(nArchetypes, 
+                 dataName, 
+                 jobscriptsDirPath=JOBSCRIPTS_DIR_PATH, 
+                 subsetsPicklesPath=SUBSETS_PICKLES_PATH,
+                 outputsPicklesPath=OUTPUTS_PICKLES_PATH, 
+                
+                 project='q27', queue='normal', numCPUs=48, wallTime='00:05:00', mem=5, jobFS=1,
+                 email = 'Jonathan.Ting@anu.edu.au',
+                 verbose=False):
+    if not exists(jobscriptsDirPath):
+        mkdir(jobscriptsDirPath)
+    subsetsPickles = [fName for fName in listdir(subsetsPicklesPath) if dataName in fName and '.pkl' in fName]
+    if verbose:
+        print('Generating archetypal analysis HPC jobs for all subsets...')
+    for subsetsPickle in subsetsPickles:
+        jobscriptPath = f"{jobscriptsDirPath}/{subsetsPickle.split('.')[0]}.sh"
+        with open(jobscriptPath, 'w') as f:
+            f.write(f"!/bin/bash\n#PBS -P {project}\n#PBS -q {queue}\n")
+            f.write(f"#PBS -l ncpus={numCPUs},walltime={wallTime},mem={mem}GB,jobfs={jobFS}GB\n")
+            f.write(f"#PBS -l storage=scratch/{project}\n#PBS -l wd\n")
+            f.write(f"#PBS -M {email}\n#PBS -m a\n\n")
+            f.write("module load python3/3.10.4\n\n")
+            f.write(f"cd $PBS_O_WORKDIR\npython3 {subsetsPickle} {nArchetypes} {outputsPicklesPath}")
+        run(['qsub', jobscriptPath])
+        if verbose:
+            print(f"  Submitted job for {subsetsPickle}...")
+    if verbose:
+        print(f"All jobs submitted!")
+    return 
+
+
 if __name__ == '__main__':
-    runAA(fName=sys.argv[1], nArchetypes=int(sys.argv[2]), outputsPicklesPath=OUTPUTS_PICKLES_PATH)
+    runAA(fName=sys.argv[1], nArchetypes=int(sys.argv[2]), outputsPicklesPath=sys.argv[3])

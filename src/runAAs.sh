@@ -4,25 +4,26 @@
 DATA_NAME=$1
 
 # Directory paths
-SUBSET_DIR="/scratch/q27/jt5911/iterative-archetypal-analysis/data/subsetsDataPKLs"
-PBS_SCRIPT_DIR="/scratch/q27/jt5911/iterative-archetypal-analysis/jobScripts"
-SCRIPT_PATH="/scratch/q27/jt5911/iterative-archetypal-analysis/PIAA.py"
+OUTPUTS_DIR="/scratch/q27/jt5911/iterative-archetypal-analysis/iaa/docs/data/subsetsOutputsPKLs"
+SUBSETS_DIR="/scratch/q27/jt5911/iterative-archetypal-analysis/iaa/docs/data/subsetsDataPKLs"
+JOBSCRIPT_DIR="/scratch/q27/jt5911/iterative-archetypal-analysis/iaa/docs/jobScripts"
+SCRIPT_PATH="/scratch/q27/jt5911/iterative-archetypal-analysis/iaa/src/iaa/runAA.py"
 
 # Create directory for PBS scripts if it doesn't exist
-mkdir -p $PBS_SCRIPT_DIR
+mkdir -p $JOBSCRIPT_DIR
 
 # Create a list of all subset files
-cd $SUBSET_DIR
+cd $SUBSETS_DIR
 SUBSET_FILES=($(ls $DATA_NAME*.pkl))
 
 # Generate and submit a PBS script for each subset file
 cd ../../
 echo "Running archetypal analysis for all subsets..."
-for subset_file in "${SUBSET_FILES[@]}"; do
-    pbs_script="${PBS_SCRIPT_DIR}/${subset_file%.pkl}.pbs"
+for subsetFile in "${SUBSET_FILES[@]}"; do
+    jobScript="${JOBSCRIPT_DIR}/${subsetFile%.pkl}.pbs"
     
     # Create PBS script
-    cat > "$pbs_script" << EOL
+    cat > "$jobScript" << EOL
 #!/bin/bash
 #PBS -P q27
 #PBS -q normal
@@ -35,14 +36,14 @@ for subset_file in "${SUBSET_FILES[@]}"; do
 module load python3/3.10.4
 
 cd \$PBS_O_WORKDIR
-python3 $SCRIPT_PATH $SUBSET_DIR/$subset_file $2
+python3 $SCRIPT_PATH $SUBSETS_DIR/$subsetFile $2 $OUTPUTS_DIR
 
 EOL
 
     # Submit the PBS script
-    qsub "$pbs_script"
+    qsub "$jobScript"
     
-    echo "  Submitted job for $subset_file"
+    echo "  Submitted job for $subsetFile"
 done
 
 # echo -e "\nAll jobs submitted!"
