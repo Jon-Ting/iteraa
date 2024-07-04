@@ -141,6 +141,5 @@ dmypy.json
 # MacOS
 .DS_Store
 
-tests/*
 docs/data/*
 docs/jobScripts/*

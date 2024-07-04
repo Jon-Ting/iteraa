@@ -39,7 +39,7 @@ __version__ = version('iaa')
 
 # Populate package namespace
 __all__ = ['constants', 'datasets', 'utils', 'plot', 'iaa', 'piaa']
-from iaa.constants import RANDOM_STATE, NUM_JOBS, PALETTE, DPI, SUBSETS_PICKLES_PATH, OUTPUTS_PICKLES_PATH
+from iaa.constants import RANDOM_STATE, NUM_JOBS, PALETTE, DPI, SUBSETS_PICKLES_PATH, OUTPUTS_PICKLES_PATH, FIGS_DIR_PATH
 from iaa.datasets import getExampleDataPath, getStrongScalingDataPath, getWeakScalingDataPaths, getValidationDataPath, getCaseStudyDataPaths
 from iaa.utils import explainedVariance 
 from iaa.plot import ternaryPlot, compareProfile, datapointProfile, plotRadarDatapoint, createSimplexAx, mapAlfaToSimplex, plotTSNE
