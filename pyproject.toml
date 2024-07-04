@@ -11,7 +11,6 @@ python = "^3.9"
 matplotlib = "^3.9.1"
 seaborn = "^0.13.2"
 natsort = "^8.4.0"
-spams = "^2.6.5.4"
 pandas = "^2.2.2"
 scikit-learn = "^1.5.1"
 scipy = {version = "^1.14.0", python = ">=3.10,<4.0"}
