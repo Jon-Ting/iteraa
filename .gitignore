@@ -142,6 +142,5 @@ dmypy.json
 .DS_Store
 
 tests/*
-src/Multicore-TSNE/
 docs/data/*
-docs/PBSscripts/*
+docs/jobScripts/*
