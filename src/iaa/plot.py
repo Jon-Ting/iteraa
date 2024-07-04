@@ -271,6 +271,17 @@ def plotTSNE(X, figNamePrefix='', figSize=(3, 3), markerSize=1, numComponents=2,
               perplexity=30.0, earlyExaggeration=12.0, learningRate='auto', nIter=1000, angle=0.5, 
               metric='euclidean', init='pca', method='barnes_hut', minGradNorm=1e-7, 
               nIterWithoutProgress=300, nJobs=NUM_JOBS, randomState=RANDOM_STATE):
+    """Conduct t-stochastic neighbour embedding and visualise the results.
+
+    Parameters
+    ----------
+    X : numpy.ndarray
+        Whole data set.
+
+    Returns
+    -------
+    None
+    """
     # reducer = MulticoreTSNE(n_components=numComponents, init='random', method=method, angle=angle, random_state=RANDOM_STATE, 
     #                         perplexity=perplexity, early_exaggeration=earlyWxaggeration, learning_rate=200.0, n_iter=nIter,
     #                         n_iter_without_progress=nIterWithoutProgress, min_grad_norm=minGradNorm, metric=metric, 

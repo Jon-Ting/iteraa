@@ -16,6 +16,18 @@ from iaa.iaa import ArchetypalAnalysis
 
 def subsetSplit(X, nSubsets, dataName, subsetsPicklesPath=SUBSETS_PICKLES_PATH,
                 shuffle=True, randomState=RANDOM_STATE, verbose=False):
+    """Split data into subsets.
+
+    Parameters
+    ----------
+    X : numpy.ndarray
+        Whole data set.
+
+    Returns
+    -------
+    runTime : float
+        Duration of execution.
+    """
     startTime = time()
     if verbose:
         print(f"Splitting data into {nSubsets} subsets...")
@@ -26,12 +38,24 @@ def subsetSplit(X, nSubsets, dataName, subsetsPicklesPath=SUBSETS_PICKLES_PATH,
             print(f"  Subset {i + 1}")
         with open(f"{subsetsPicklesPath}/{dataName}data{i + 1}.pkl", 'wb') as f:
             pickle.dump((idxs, X[idxs, :].T), f)  # subsetX
-    return time() - startTime
+    runTime = time() - startTime
+    return runTime
 
 
 def runAA(fName, nArchetypes, outputsPicklesPath=OUTPUTS_PICKLES_PATH, 
           robust=False, tolerance=0.001, computeXtX=False, stepsFISTA=3, stepsAS=50, 
           randominit=False, numThreads=-1, onlyZ=False):
+    """Executes archetypal analysis.
+
+    Parameters
+    ----------
+    fName : str
+        Path to pickle file containing data.
+
+    Returns
+    -------
+    None
+    """
     startTime = time()
     with open(fName, 'rb') as f:
         idxs, subsetX = pickle.load(f)
@@ -55,6 +79,18 @@ def fitPIAA(X, nArchetypes, numSubset, dataName, outputsPicklesPath=OUTPUTS_PICK
             shuffle=True, robust=False, onlyZ=False, C=0.0001, tolerance=0.001, computeXtX=False, 
             stepsFISTA=3, stepsAS=50, randominit=False, randomState=RANDOM_STATE, numThreads=-1, 
             splitRunTime=0.0, verbose=True):
+    """Combining results from individual archetypal analysis runs to obtain final archetypes.
+
+    Parameters
+    ----------
+    X : numpy.ndarray
+        Whole data set.
+
+    Returns
+    -------
+    AA : ArchetypalAnalysis object
+        Object with fitted results.
+    """
     startTime = time()
     # Initialise AA object to be filled in
     AA = ArchetypalAnalysis(nArchetypes=nArchetypes, iterative=True, robust=robust, onlyZ=onlyZ, nSubsets=numSubset, shuffle=shuffle, 
