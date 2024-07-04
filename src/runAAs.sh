@@ -5,7 +5,7 @@ DATA_NAME=$1
 
 # Directory paths
 SUBSET_DIR="/scratch/q27/jt5911/iterative-archetypal-analysis/data/subsetsDataPKLs"
-PBS_SCRIPT_DIR="/scratch/q27/jt5911/iterative-archetypal-analysis/PBSscripts"
+PBS_SCRIPT_DIR="/scratch/q27/jt5911/iterative-archetypal-analysis/jobScripts"
 SCRIPT_PATH="/scratch/q27/jt5911/iterative-archetypal-analysis/PIAA.py"
 
 # Create directory for PBS scripts if it doesn't exist
