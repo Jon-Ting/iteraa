@@ -7,7 +7,7 @@ from spams import archetypalAnalysis
 
 
 
-def runAA(fName, nArchetypes, outputsPicklesPath='.',
+def runAA(fName, nArchetypes, outputsPicklesPath='.', splitKeyword='data',
           robust=False, tolerance=0.001, computeXtX=False, stepsFISTA=3, stepsAS=50, 
           randominit=False, numThreads=-1, onlyZ=False):
     """Executes archetypal analysis.
@@ -28,9 +28,8 @@ def runAA(fName, nArchetypes, outputsPicklesPath='.',
                                                       returnAB=True, robust=robust, epsilon=tolerance, computeXtX=computeXtX, 
                                                       stepsFISTA=stepsFISTA, stepsAS=stepsAS, randominit=randominit, 
                                                       numThreads=numThreads)
-    print(subsetZ)
-    dataName = fName.split('/')[-1].split('data')[0]
-    subsetID = fName.split('data')[-1].split('.pkl')[0]
+    dataName = fName.split('/')[-1].split(splitKeyword)[0]
+    subsetID = fName.split(splitKeyword)[-1].split('.pkl')[0]
     outputsDict = {'subsetZ': subsetZ, 'runTime': time() - startTime}
     if not onlyZ:    
         outputsDict['subsetA'] = subsetA.toarray()
@@ -41,5 +40,5 @@ def runAA(fName, nArchetypes, outputsPicklesPath='.',
 
 
 if __name__ == '__main__':
-    runAA(fName=sys.argv[1], nArchetypes=int(sys.argv[2]), outputsPicklesPath=sys.argv[3])
+    runAA(fName=sys.argv[1], nArchetypes=int(sys.argv[2]), outputsPicklesPath=sys.argv[3], splitKeyword=sys.argv[4])
 

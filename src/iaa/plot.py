@@ -4,186 +4,212 @@ import matplotlib.pyplot as plt
 from matplotlib import colors
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import numpy as np
-from MulticoreTSNE import MulticoreTSNE
+# from MulticoreTSNE import MulticoreTSNE
 import seaborn as sns
 from sklearn.manifold import TSNE
 
-from iaa.constants import RANDOM_STATE, NUM_JOBS, PALETTE, DPI
+from iaa.constants import RANDOM_STATE, NUM_JOBS, PALETTE, DPI, FIGS_DIR_PATH
  
 
-def ternaryPlot(data, scaling=True, startAngle=90, rotateLabels=True,
-                labels=('one','two','three'), sides=3, labelOffset=0.10,
-                edgeArgs={'color':'black','linewidth':1},
-                figArgs = {'figsize':(8,8),'facecolor':'white','edgecolor':'white'},
-                gridOn = True):
-    '''
-    source: https://stackoverflow.com/questions/701429/library-tool-for-drawing-ternary-triangle-plots
+# def ternaryPlot(data, scaling=True, startAngle=90, rotateLabels=True,
+#                 labels=('one', 'two', 'three'), sides=3, labelOffset=0.10,
+#                 edgeArgs={'color': 'black', 'linewidth': 1},
+#                 figArgs={'figsize': (8, 8), 'facecolor': 'white', 'edgecolor': 'white'},
+#                 gridOn=True):
+#     '''
+#     source: https://stackoverflow.com/questions/701429/library-tool-for-drawing-ternary-triangle-plots
     
-    This will create a basic "ternary" plot (or quaternary, etc.)
+#     This will create a basic "ternary" plot (or quaternary, etc.)
     
-    DATA:           The dataset to plot. To show data-points in terms of archetypes
-                    the alfa matrix should be provided.
+#     DATA:           The dataset to plot. To show data-points in terms of archetypes
+#                     the alfa matrix should be provided.
     
-    SCALING:        Scales the data for ternary plot such that the components along
-                    each axis dimension sums to 1. This conditions is already imposed 
-                    on alfas for archetypal analysis.
+#     SCALING:        Scales the data for ternary plot such that the components along
+#                     each axis dimension sums to 1. This conditions is already imposed 
+#                     on alfas for archetypal analysis.
     
-    startAngle:    Direction of first vertex.
+#     startAngle:    Direction of first vertex.
     
-    rotateLabels:  Orient labels perpendicular to vertices.
+#     rotateLabels:  Orient labels perpendicular to vertices.
     
-    labels:         Labels for vertices.
+#     labels:         Labels for vertices.
     
-    sides:          Can accomodate more than 3 dimensions if desired.
+#     sides:          Can accomodate more than 3 dimensions if desired.
     
-    labelOffset:   Offset for label from vertex (percent of distance from origin).
+#     labelOffset:   Offset for label from vertex (percent of distance from origin).
     
-    edgeArgs:      Any matplotlib keyword args for plots.
+#     edgeArgs:      Any matplotlib keyword args for plots.
     
-    figArgs:       Any matplotlib keyword args for figures.
-    '''
-    basis = np.array(
-                    [
-                        [
-                            np.cos(2*_*pi/sides + startAngle*pi/180),
-                            np.sin(2*_*pi/sides + startAngle*pi/180)
-                        ] 
-                        for _ in range(sides)
-                    ]
-                )
+#     figArgs:       Any matplotlib keyword args for figures.
+#     '''
+#     basis = np.array(
+#                     [
+#                         [
+#                             np.cos(2*_*pi/sides + startAngle*pi/180),
+#                             np.sin(2*_*pi/sides + startAngle*pi/180)
+#                         ] 
+#                         for _ in range(sides)
+#                     ]
+#                 )
 
-    # If data is Nxsides, newdata is Nx2.
-    if scaling:
-        # Scales data for you.
-        newdata = np.dot((data.T / data.sum(-1)).T,basis)
-    else:
-        # Assumes data already sums to 1.
-        newdata = np.dot(data,basis)
+#     # If data is Nxsides, newdata is Nx2.
+#     if scaling:
+#         # Scales data for you.
+#         newdata = np.dot((data.T / data.sum(-1)).T,basis)
+#     else:
+#         # Assumes data already sums to 1.
+#         newdata = np.dot(data,basis)
 
-#    fig = plt.figure(**figArgs)
-    fig = plt.figure(figsize=(10,10))
-    ax = fig.add_subplot(111)
+#     # fig = plt.figure(**figArgs)
+#     fig = plt.figure(figsize=(10,10))
+#     ax = fig.add_subplot(111)
 
-    for i,l in enumerate(labels):
-        if i >= sides:
-            break
-        x = basis[i,0]
-        y = basis[i,1]
-        if rotateLabels:
-            angle = 180*np.arctan(y/x)/pi + 90
-            if angle > 90 and angle <= 270:
-                angle = angle = (angle + 180) % 360 # mod(angle + 180,360)
+#     for i,l in enumerate(labels):
+#         if i >= sides:
+#             break
+#         x = basis[i,0]
+#         y = basis[i,1]
+#         if rotateLabels:
+#             angle = 180*np.arctan(y/x)/pi + 90
+#             if angle > 90 and angle <= 270:
+#                 angle = angle = (angle + 180) % 360 # mod(angle + 180,360)
+#         else:
+#             angle = 0
+#         ax.text(
+#                 x*(1 + labelOffset),
+#                 y*(1 + labelOffset),
+#                 l,
+#                 horizontalalignment='center',
+#                 verticalalignment='center',
+#                 rotation=angle
+#             )
+
+#     # Clear normal matplotlib axes graphics.
+#     ax.set_xticks(())
+#     ax.set_yticks(())
+#     ax.set_frame_on(False)
+    
+#     # Plot border
+#     lstAx0 = []
+#     lstAx1 = []
+#     ignore = False
+#     for i in range(sides):
+#         for j in range(i + 2, sides):
+#             if (i == 0 & j == sides):
+#                 ignore = True
+#             else:
+#                 ignore = False                        
+
+#             if not (ignore):
+#             # if (j!=i & j!=i+1 & j != i-1):                        
+#                 lstAx0.append(basis[i,0] + [0,])
+#                 lstAx1.append(basis[i,1] + [0,])
+#                 lstAx0.append(basis[j,0] + [0,])
+#                 lstAx1.append(basis[j,1] + [0,])
+
+#     # lstAx0.append(basis[0,0] + [0,])
+#     # lstAx1.append(basis[0,1] + [0,])
+    
+#     ax.plot(lstAx0,lstAx1, color='#FFFFFF',linewidth=1, alpha = 0.5)
+    
+#     # Plot border
+#     lstAx0 = []
+#     lstAx1 = []
+#     for _ in range(sides):
+#         lstAx0.append(basis[_, 0] + [0,])
+#         lstAx1.append(basis[_, 1] + [0,])
+
+#     lstAx0.append(basis[0,0] + [0,])
+#     lstAx1.append(basis[0,1] + [0,])
+#    # ax.plot([basis[_, 0] for _ in range(sides) + [0,]],
+#    #         [basis[_, 1] for _ in range(sides) + [0,]],
+#    #         **edgeArgs)
+#     ax.plot(lstAx0, lstAx1, linewidth=1) #, **edgeArgs ) 
+#     return newdata, ax 
+
+
+# def compareProfile(AAprof1, AAprof2, featureCols):
+#     """
+#     This function plots the profile of the archetypes.
+    
+#     featureCols:
+#         Optional input. list of feature names to use to label x-axis.
+#     """               
+#     plt.style.use('ggplot')
+#     nDim = len(featureCols)
+#     xVals = np.arange(1, nDim + 1)
+#     plt.figure(figsize=(14,5))
+#     plt.bar(xVals, AAprof1 * 100.0, color='#413F3F', label='Minimum Case')
+#     plt.bar(xVals, AAprof2 * 100.0, color='#8A2BE2', alpha=0.5, label='Maximum Case')
+#     plt.xticks(xVals, featureCols, rotation='vertical')
+#     plt.ylim([0, 100])
+#     # plt.ylabel('A' + str(i + 1))
+#     plt.rcParams.update({'font.size': 10})
+#     plt.tight_layout()
+#     plt.legend(loc='upper left')
+    
+ 
+# def datapointProfile(xPoint, xData):
+#     pointProfile = []
+#     for i, p in enumerate(xPoint):
+#         d = xData[i, :]
+#         pointProfile.append(ecdf(d, p))
+#     return np.array(pointProfile)
+
+
+def plotRadarDatapoints(AA, X, sampIDs=[0], archSpaceIDs=[0, 1], 
+                        sepSamps=False, showLabel=True, labelAll=False, showLegend=False,
+                        figSize=(6, 6), dpi=DPI, title=None, figNamePrefix=''):
+    # Getting labels
+    labels = [f"A{i+1}" for i in archSpaceIDs]
+    angles = np.linspace(0, 2*np.pi, len(archSpaceIDs), endpoint=False)
+    angles = np.concatenate((angles, [angles[0]]))
+
+    if not sepSamps:
+        fig = plt.figure(figsize=figSize, dpi=dpi)
+        ax = fig.add_subplot(111, polar=True)
+        if showLegend:
+            legend = []
+    for (i, sampID) in enumerate(range(len(sampIDs))):
+        if sepSamps:
+            fig = plt.figure(figsize=figSize, dpi=dpi)
+            ax = fig.add_subplot(111, polar=True)
+        c = sns.color_palette('husl', len(sampIDs))[i]
+        _, alfaX = AA.transform(X[sampID, :].reshape(1, -1))
+        alfaX = [alfaX[ID] for ID in archSpaceIDs]
+        alfaX = np.concatenate((alfaX, [alfaX[0]]))
+        ax.plot(angles, alfaX, '.-', linewidth=1, markersize=5, zorder=-1, color=c)
+        ax.fill(angles, alfaX, alpha=0.2, zorder=-2, color=c)
+        # ax.set_rlabel_position(0)
+        ax.set_rticks([0.2, 0.4, 0.6, 0.8])
+        ax.set_rlim(0.0, 1.0)
+        if showLabel:
+            if not labelAll and len(archSpaceIDs) < 8: 
+                print('Number of labels <8, nullifying `labelAll`, showing all labels...')
+                labelAll = True
+            if labelAll:
+                labelIdxs = [j for j in range(len(angles) - 1)]
+            else:  # Only label 8 standard corners
+                labelIdxs = np.round(np.linspace(0, len(angles)-1, 9)[:-1]).astype(int)
+            ax.set_thetagrids(angles[labelIdxs] * 180.0/np.pi, [labels[idx] for idx in labelIdxs])
         else:
-            angle = 0
-        ax.text(
-                x*(1 + labelOffset),
-                y*(1 + labelOffset),
-                l,
-                horizontalalignment='center',
-                verticalalignment='center',
-                rotation=angle
-            )
-
-    # Clear normal matplotlib axes graphics.
-    ax.set_xticks(())
-    ax.set_yticks(())
-    ax.set_frame_on(False)
-    
-    # Plot border
-    lstAx0 = []
-    lstAx1 = []
-    ignore = False
-    for i in range(sides):
-        for j in range(i + 2, sides):
-            if (i == 0 & j == sides):
-                ignore = True
-            else:
-                ignore = False                        
-#                
-            if not (ignore):
-#            if (j!=i & j!=i+1 & j != i-1):                        
-                lstAx0.append(basis[i,0] + [0,])
-                lstAx1.append(basis[i,1] + [0,])
-                lstAx0.append(basis[j,0] + [0,])
-                lstAx1.append(basis[j,1] + [0,])
-
-#    lstAx0.append(basis[0,0] + [0,])
-#    lstAx1.append(basis[0,1] + [0,])
-    
-    ax.plot(lstAx0,lstAx1, color='#FFFFFF',linewidth=1, alpha = 0.5)
-    
-    # Plot border
-    lstAx0 = []
-    lstAx1 = []
-    for _ in range(sides):
-        lstAx0.append(basis[_, 0] + [0,])
-        lstAx1.append(basis[_, 1] + [0,])
-
-    lstAx0.append(basis[0,0] + [0,])
-    lstAx1.append(basis[0,1] + [0,])
-#    ax.plot(
-#        [basis[_, 0] for _ in range(sides) + [0,]],
-#        [basis[_, 1] for _ in range(sides) + [0,]],
-#        **edgeArgs
-#    )
-#    
-    ax.plot(lstAx0, lstAx1, linewidth=1) #, **edgeArgs ) 
-    return newdata, ax 
+            ax.set_thetagrids(angles * 180.0/np.pi, [''] + [''] * len(sampIDs))
+        ax.set_title(title)
+        ax.grid(linestyle='dotted', color='k', alpha=0.3, linewidth=1)
+        ax.set_facecolor('#EAECEE')
+        if not sepSamps:
+            if showLegend:
+                legend.extend([f"D{sampID + 1}", '_'])
+        else:
+            plt.savefig(f"{FIGS_DIR_PATH}/{figNamePrefix}_sampsArchSpace_D{sampID + 1}.png", bbox_inches='tight')
+    if not sepSamps:
+        if showLegend:
+            ax.legend(legend, loc='center', bbox_to_anchor=(1.2, 0.5), ncol=1)
+        plt.savefig(f"{FIGS_DIR_PATH}/{figNamePrefix}_sampsArchSpace.png", bbox_inches='tight')
 
 
-def compareProfile(AAprof1, AAprof2, featureCols):
-    """
-    This function plots the profile of the archetypes.
-    
-    featureCols:
-        Optional input. list of feature names to use to label x-axis.
-    """               
-    plt.style.use('ggplot')
-    nDim = len(featureCols)
-    xVals = np.arange(1, nDim + 1)
-    plt.figure(figsize=(14,5))
-    plt.bar(xVals, AAprof1 * 100.0, color='#413F3F', label='Minimum Case')
-    plt.bar(xVals, AAprof2 * 100.0, color='#8A2BE2', alpha=0.5, label='Maximum Case')
-    plt.xticks(xVals, featureCols, rotation='vertical')
-    plt.ylim([0, 100])
-#    plt.ylabel('A' + str(i + 1))
-    plt.rcParams.update({'font.size': 10})
-    plt.tight_layout()
-    plt.legend(loc='upper left')
-    
- 
-def datapointProfile(xPoint, xData):
-    pointProfile = []
-    for i, p in enumerate(xPoint):
-        d = xData[i, :]
-        pointProfile.append(ecdf(d, p))
-    return np.array(pointProfile)
-
-
-def plotRadarDatapoint(AA, X, title='Radar plot of datapoint'):
-    _, alfaX = AA.transform(X)
-    
-    labels = ['A' + str(i+1) for i in range(AA.nArchetypes)]
-    angles = np.linspace(0, 2*np.pi, AA.nArchetypes, endpoint=False)
-    angles = np.concatenate((angles, [angles[0]])) 
-    
-    fig = plt.figure(figsize=(3, 3))
-    alfaX = np.concatenate((alfaX, [alfaX[0]]))
-    
-    ax = fig.add_subplot(111, polar=True)
-    ax = plt.subplot(111, polar=True)
-    ax.plot(angles, alfaX, 'o-', markersize=5, linewidth=1.5, color='#273746')
-    ax.fill(angles, alfaX, alpha=0.25)
-    ax.set_thetagrids(np.array(angles) * 180.0/np.pi, ['0'] + labels)
-    ax.set_title(title)
-    ax.grid(True)
-    ax.set_rlim(0,1)
-    ax.set_facecolor('#EAECEE')
-    return ax
-
-
-def createSimplexAx(AA, gridOn=True, gridcolor='#EAECEE',
-                    bordercolor='#4A235A', fontcolor='#6C3483', figSize=(3, 3)):
+def createSimplexAx(AA, archIDs=[0, 1, 2], gridOn=True, showLabel=True, labelAll=False, figSize=(3, 3), gridLineWidth=0.5,
+                    gridcolor='k', bordercolor='k', fontcolor='k'):
         """
         # groupColor = None, color = None, marker = None, size = None
         groupColor:    
@@ -191,35 +217,44 @@ def createSimplexAx(AA, gridOn=True, gridcolor='#EAECEE',
             Dimension:      nData x 1
             
             Description:    Contains the category of data point.
-        """        
-        # plt.style.use('seaborn-paper')
+        """
+        if len(archIDs) == 0: 
+            raise Exception("Archetype IDs can't be empty!")
+        
         nArchetypes = AA.nArchetypes
-        # fig = plt.figure(figsize=[16,8])
         fig, ax = plt.subplots(figsize=figSize)
         
-        labels = ('A'+str(i + 1) for i in range(nArchetypes))
+        labels = ['A' + str(i + 1) for i in archIDs] if showLabel else []
         rotateLabels = True
         labelOffset = 0.10
         scaling = False
-        sides = nArchetypes
+        sides = len(archIDs)
         
         basis = np.array([[np.cos(2*_*pi/sides + 90*pi/180),
                            np.sin(2*_*pi/sides + 90*pi/180)] for _ in range(sides)])
-    
-        for i,l in enumerate(labels):
-            if i >= sides:
-                break
-            x = basis[i,0]
-            y = basis[i,1]
-            if rotateLabels:
-                angle = 180*np.arctan(y/x)/pi + 90
-                if angle > 90 and angle <= 270:
-                    angle = angle = (angle + 180) % 360 # mod(angle + 180, 360)
-            else:
-                angle = 0
-            ax.text(x*(1 + labelOffset), y*(1 + labelOffset),
-                    l, horizontalalignment='center', verticalalignment='center',
-                    rotation=angle, fontsize=12, color=fontcolor)
+
+        if not labelAll and len(labels) < 8: 
+            print('Number of labels <8, nullifying `labelAll`, showing all labels...')
+            labelAll = True
+        if showLabel:
+            labelIdxs = np.round(np.linspace(0, len(labels)-1, 9)[:-1]).astype(int) if not labelAll else range(len(labels))   
+            for (i, l) in enumerate(labels):
+                if not labelAll:
+                    if i not in labelIdxs:
+                        continue
+                if i >= sides:
+                    break
+                x = basis[i,0]
+                y = basis[i,1]
+                if rotateLabels:
+                    angle = 180*np.arctan(y/x)/pi + 90
+                    if angle > 90 and angle <= 270:
+                        angle = angle = (angle + 180) % 360  # mod(angle + 180, 360)
+                else:
+                    angle = 0
+                ax.text(x*(1 + labelOffset), y*(1 + labelOffset),
+                        l, horizontalalignment='center', verticalalignment='center',
+                        rotation=angle, fontsize=12, color=fontcolor)
     
         # Clear normal matplotlib axes graphics.
         ax.set_xticks(())
@@ -227,21 +262,22 @@ def createSimplexAx(AA, gridOn=True, gridcolor='#EAECEE',
         ax.set_frame_on(False)
 
         # Plot Grids
-        lstAx0 = []
-        lstAx1 = []
-        ignore = False
-        for i in range(sides):
-            for j in range(i + 2, sides):
-                if (i == 0 & j == sides):
-                    ignore = True
-                else:
-                    ignore = False                        
-                if not (ignore):                    
-                    lstAx0.append(basis[i,0] + [0,])
-                    lstAx1.append(basis[i,1] + [0,])
-                    lstAx0.append(basis[j,0] + [0,])
-                    lstAx1.append(basis[j,1] + [0,])
-        ax.plot(lstAx0, lstAx1, color=gridcolor, linewidth=0.5, alpha=0.5, zorder=1)
+        if gridOn:
+            lstAx0 = []
+            lstAx1 = []
+            ignore = False
+            for i in range(sides):
+                for j in range(i + 2, sides):
+                    if (i == 0 & j == sides):
+                        ignore = True
+                    else:
+                        ignore = False                        
+                    if not (ignore):                    
+                        lstAx0.append(basis[i,0] + [0,])
+                        lstAx1.append(basis[i,1] + [0,])
+                        lstAx0.append(basis[j,0] + [0,])
+                        lstAx1.append(basis[j,1] + [0,])
+            ax.plot(lstAx0, lstAx1, color=gridcolor, linewidth=gridLineWidth, alpha=0.5, zorder=1)
         
         # Plot border
         lstAx0 = []

@@ -42,7 +42,7 @@ __all__ = ['constants', 'datasets', 'utils', 'plot', 'iaa', 'piaa']
 from iaa.constants import RANDOM_STATE, NUM_JOBS, PALETTE, DPI, SUBSETS_PICKLES_PATH, OUTPUTS_PICKLES_PATH, FIGS_DIR_PATH
 from iaa.datasets import getExampleDataPath, getStrongScalingDataPath, getWeakScalingDataPaths, getValidationDataPath, getCaseStudyDataPaths
 from iaa.utils import explainedVariance 
-from iaa.plot import ternaryPlot, compareProfile, datapointProfile, plotRadarDatapoint, createSimplexAx, mapAlfaToSimplex, plotTSNE
+from iaa.plot import plotRadarDatapoints, createSimplexAx, mapAlfaToSimplex, plotTSNE
 from iaa.iaa import ArchetypalAnalysis
-from iaa.piaa import subsetSplit, runAA, fitPIAA
+from iaa.piaa import subsetSplit, submitAAjobs, runAA, fitPIAA
 

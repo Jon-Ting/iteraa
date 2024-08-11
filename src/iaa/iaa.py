@@ -75,7 +75,7 @@ class ArchetypalAnalysis():
                         2. random:  Randomly selects archetypes in the feature space. The points could be any point in space
                         3. randomIdx:  Randomly selects archetypes from points in the dataset.
     """
-    def __init__(self, nArchetypes=2, iterative=False, nSubsets=10, shuffle=True, onlyZ=False,
+    def __init__(self, nArchetypes=2, iterative=False, nSubsets=10, shuffle=True, onlyZ=False, subsetsSampleIdxs=[],
                  tolerance=0.001, maxIter=200, randomState=RANDOM_STATE, C=0.0001, initialize='furthestSum', redundancyTry=30, 
                  robust=False, computeXtX=False, stepsFISTA=3, stepsAS=50, randominit=False, numThreads=-1, verbose=False):
         self.nArchetypes = nArchetypes
@@ -106,7 +106,7 @@ class ArchetypalAnalysis():
         self.randominit = randominit
         self.numThreads = numThreads
         self.subsetsZs = []
-        self.subsetsSampleIdxs = []
+        self.subsetsSampleIdxs = subsetsSampleIdxs
         self.runTime = 0.0
         self.verbose = verbose
 
@@ -117,9 +117,11 @@ class ArchetypalAnalysis():
         startTime = time()
         if self.iterative:
             # Split data into subsets and conduct archetypal analysis on each of them
-            kFold = KFold(n_splits=self.nSubsets, shuffle=self.shuffle, random_state=self.randomState)
+            if len(subsetsSampleIdxs) == 0:
+                kFold = KFold(n_splits=self.nSubsets, shuffle=self.shuffle, random_state=self.randomState)
+                self.subsetsSampleIdxs = [idxs for (_, idxs) in kFold.split(X)]
             subsetsAs, subsetsBs = [], []
-            for (i, (_, idxs)) in enumerate(kFold.split(X)):
+            for (i, idxs) in enumerate(self.subsetsSampleIdxs):
                 if self.verbose:
                     print(f"Subset {i + 1}")
                 subsetX = X[idxs, :].T
@@ -131,7 +133,6 @@ class ArchetypalAnalysis():
                 if not self.onlyZ:    
                     subsetsAs.append(subsetA.toarray())
                     subsetsBs.append(subsetB.toarray())
-                    self.subsetsSampleIdxs.append(idxs)
             # Get final archetypes by conducting archetypal analysis on the archetypes obtained from each subset
             allSubsetsZs = np.concatenate(self.subsetsZs, axis=1)  # (m*(k*p))
             self.archetypes, Afinal, Bfinal = archetypalAnalysis(np.asfortranarray(allSubsetsZs), Z0=None, p=self.nArchetypes,
@@ -441,8 +442,8 @@ class ArchetypalAnalysis():
         self.beta = self.beta[:,rank]
    
     
-    def plotSimplex(self, alfa, archIDs=[0, 1, 2], plotArgs={}, gridOn=True, showLabel=True,
-                     figSize=(3, 3), dpi=DPI, markerSize=2, figNamePrefix=''):
+    def plotSimplex(self, alfa, archIDs=[0, 1, 2], plotArgs={}, gridOn=True, showLabel=True, labelAll=False, 
+                    figSize=(3, 3), dpi=DPI, gridLineWidth=0.1, markerSize=20, figNamePrefix=''):
         """
         # groupColor = None, color = None, marker = None, size = None
         groupColor:    
@@ -453,7 +454,7 @@ class ArchetypalAnalysis():
         """
         if len(archIDs) == 0: 
             raise Exception("Archetype IDs can't be empty!")
-        labels = ('A' + str(i + 1) for i in archIDs) if showLabel else []
+        labels = ['A' + str(i + 1) for i in archIDs] if showLabel else []
         rotateLabels = True
         labelOffset = 0.10
         data = alfa[archIDs].T
@@ -469,37 +470,48 @@ class ArchetypalAnalysis():
             newdata = np.dot(data, basis)
         fig = plt.figure(figsize=figSize, dpi=dpi)
         ax = fig.add_subplot(111)
-    
-        for (i, l) in enumerate(labels):
-            if i >= sides:
-                break
-            x = basis[i, 0]
-            y = basis[i, 1]
-            if rotateLabels:
-                angle = 180*np.arctan(y/x)/pi + 90
-                if angle > 90 and angle <= 270:
-                    angle = (angle + 180) % 360 # mod(angle + 180,360)
-            else:
-                angle = 0
-            ax.text(x*(1 + labelOffset), y*(1 + labelOffset),
-                    l, horizontalalignment='center', verticalalignment='center', rotation=angle)
+
+        if not labelAll and len(labels) < 8: 
+            print('Number of labels <8, nullifying `labelAll`, showing all labels...')
+            labelAll = True
+        if showLabel:
+            labelIdxs = np.round(np.linspace(0, len(labels)-1, 9)[:-1]).astype(int) if not labelAll else range(len(labels))
+            for (i, l) in enumerate(labels):
+                if not labelAll:
+                    if i not in labelIdxs:
+                        continue
+                if i >= sides:
+                    break
+                x = basis[i, 0]
+                y = basis[i, 1]
+                if rotateLabels:
+                    angle = 180*np.arctan(y/x)/pi + 90
+                    if angle > 90 and angle <= 270:
+                        angle = (angle + 180) % 360 # mod(angle + 180,360)
+                else:
+                    angle = 0
+                ax.text(x*(1.05 + labelOffset), y*(1.05 + labelOffset),
+                        l, horizontalalignment='center', verticalalignment='center', rotation=angle)
+            
         # Clear normal matplotlib axes graphics.
         ax.set_xticks(())
         ax.set_yticks(())
         ax.set_frame_on(False)
-        # Plot border
-        lstAx0 = []
-        lstAx1 = []
-        ignore = False
-        for i in range(sides):
-            for j in range(i + 2, sides):
-                ignore = True if (i==0 & j==sides) else False                    
-                if not (ignore):              
-                    lstAx0.append(basis[i, 0] + [0,])
-                    lstAx1.append(basis[i, 1] + [0,])
-                    lstAx0.append(basis[j, 0] + [0,])
-                    lstAx1.append(basis[j, 1] + [0,])
-        ax.plot(lstAx0, lstAx1, color='#212121', linewidth=0.1, alpha=0.5, zorder=1)
+        
+        # Plot grid
+        if gridOn:
+            lstAx0 = []
+            lstAx1 = []
+            ignore = False
+            for i in range(sides):
+                for j in range(i + 2, sides):
+                    ignore = True if (i==0 & j==sides) else False                    
+                    if not (ignore):              
+                        lstAx0.append(basis[i, 0] + [0,])
+                        lstAx1.append(basis[i, 1] + [0,])
+                        lstAx0.append(basis[j, 0] + [0,])
+                        lstAx1.append(basis[j, 1] + [0,])
+            ax.plot(lstAx0, lstAx1, color='#212121', linewidth=gridLineWidth, alpha=0.5, zorder=1)
         
         # Plot border
         lstAx0 = []
@@ -512,7 +524,7 @@ class ArchetypalAnalysis():
 
         ax.plot(lstAx0, lstAx1, linewidth=1, zorder=2, color='k')  #, **edgeArgs) 
         if len(plotArgs) == 0:
-            ax.scatter(newdata[:, 0], newdata[:, 1], color='#303F9F', zorder=3, alpha=0.5, s=markerSize)
+            ax.scatter(newdata[:, 0], newdata[:, 1], color='#303F9F', zorder=3, alpha=0.8, s=markerSize)
         else:
             if ('marker' in plotArgs):   
                 markerVals = plotArgs['marker'].values
@@ -524,13 +536,15 @@ class ArchetypalAnalysis():
                     for keys in plotArgs:
                         if (keys!= 'marker'):
                             tmpArg[keys] = plotArgs[keys].values[rowIdx]
-                    ax.scatter(newdata[rowIdx,0], newdata[rowIdx,1], **tmpArg, marker=marker, alpha=0.5, zorder=3)
+                    ax.scatter(newdata[rowIdx,0], newdata[rowIdx,1], **tmpArg, marker=marker, edgecolor='k', alpha=0.8, zorder=3)
             else:
                 ax.scatter(newdata[:,0], newdata[:,1], **plotArgs, marker='s', zorder=3, alpha=0.5)
-        plt.savefig(f"{FIGS_DIR_PATH}/{figNamePrefix}_simplex.png", bbox_inches='tight')
+        # plt.savefig(f"{FIGS_DIR_PATH}/{figNamePrefix}_simplex.png", bbox_inches='tight')
             
                
-    def parallelPlot(self, lstFeat, dfColor, linewidth='0.3', archColor='black'):
+    def parallelPlot(self, lstFeat, dfColor, featIDs=[0, 1, 2], archIDs=[0, 1, 2], sampIDs=[0, 1, 2], 
+                     linewidth='0.3', archColor='k', 
+                     figSize=(15, 5), dpi=DPI, figNamePrefix=''):
         """
         Based on source: http://benalexkeen.com/parallel-coordinates-in-matplotlib/
         
@@ -542,35 +556,36 @@ class ArchetypalAnalysis():
                     data point.
         """
         from matplotlib import ticker
-        x = [i for i, _ in enumerate(lstFeat)]
-        df = pd.DataFrame(self.X.T, columns = lstFeat)
-        for i in range(self.nArchetypes):
-            df.loc[-1] = list(self.archetypes[:,i])
+        
+        x = [i for (i, _) in enumerate(lstFeat)]
+        df = pd.DataFrame(self.X[featIDs, :][:, sampIDs].T, columns=lstFeat)
+        for i in archIDs:
+            df.loc[-1, :] = list(self.archetypes[featIDs, i])
             df.index = df.index + 1  # shifting index
             df = df.sort_index()  # sorting by index            
             
             dfColor.loc[-1] = 'arch'
             dfColor.index = dfColor.index + 1  # shifting index
-            dfColor = dfColor.sort_index()  # sorting by index          
+            dfColor = dfColor.sort_index()  # sorting by index
                 
         # Create (X-1) sublots along x axis
-        fig, axes = plt.subplots(1, len(x)-1, sharey=False, figsize=(15,5))
+        fig, axes = plt.subplots(1, len(x)-1, sharey=False, figsize=figSize, dpi=dpi)
         # Get min, max and range for each column
-        # Normalize the data for each column
+        # Normalise the data for each column
         minMaxRange = {}       
         for col in lstFeat:
             minMaxRange[col] = [df[col].min(), df[col].max(), np.ptp(df[col])]
             df[col] = np.true_divide(df[col] - df[col].min(), np.ptp(df[col]))
-        # Plot 
-        for i, ax in enumerate(axes):
-            for idx in df.index:    
-                if (dfColor.loc[idx,'color'] == 'arch'):
+
+        for (i, ax) in enumerate(axes):
+            for idx in df.index:
+                if (dfColor.loc[idx, 'color'] == 'arch'):
                     # Plot each archetype
-                    ax.plot(x, df.loc[idx, lstFeat], color = archColor, alpha = 0.8, linewidth='2.0')
+                    ax.plot(x, df.loc[idx, lstFeat], color=archColor, alpha=0.8, linewidth='2.0')
                 else:
                     # Plot each data point
-                    ax.plot(x, df.loc[idx, lstFeat], color = dfColor.loc[idx,'color'], alpha = 0.3, linewidth=linewidth)
-            ax.set_xlim([x[i], x[i+1]])            
+                    ax.plot(x, df.loc[idx, lstFeat], color=dfColor.loc[idx, 'color'], alpha=0.3, linewidth=linewidth)
+            ax.set_xlim([x[i], x[i+1]])
             
         # Set the tick positions and labels on y axis for each plot
         # Tick positions based on normalised data
@@ -585,19 +600,18 @@ class ArchetypalAnalysis():
             ticks = [round(normMin + normStep * i, 2) for i in range(ticks)]
             ax.yaxis.set_ticks(ticks)
             ax.set_yticklabels(tickLabels)
+            
         for dim, ax in enumerate(axes):
             ax.xaxis.set_major_locator(ticker.FixedLocator([dim]))
             set_ticks_for_axis(dim, ax, ticks=6)
             ax.set_xticklabels([lstFeat[dim]], rotation='vertical')
         # Move the final axis' ticks to the right-hand side
-        ax = plt.twinx(axes[-1])
-        dim = len(axes)
         ax.xaxis.set_major_locator(ticker.FixedLocator([x[-2], x[-1]]))
-        set_ticks_for_axis(dim, ax, ticks=6)
+        set_ticks_for_axis(len(axes), ax, ticks=6)
         ax.set_xticklabels([lstFeat[-2], lstFeat[-1]], rotation='vertical')
         # Remove space between subplots
         plt.subplots_adjust(wspace=0)       
-        plt.show()
+        plt.savefig(f"{FIGS_DIR_PATH}/{figNamePrefix}_parallel.png", bbox_inches='tight')
         
     
     def _extractArchetypeProfiles(self):
@@ -614,26 +628,26 @@ class ArchetypalAnalysis():
                 self.archetypeProfile[j, i] = ecdf(xData, xArch)
                 
     
-    def plotProfile(self, allFeatNames=None, selectedFeatsIdxs=None, archIDs=[],
-                     figSize=(14, 5), dpi=DPI, figNamePrefix=''):
+    def plotProfile(self, allFeatNames=None, featIDs=None, archIDs=[0, 1],
+                    figSize=(14, 5), dpi=DPI, figNamePrefix=''):
         """
         This function plots the profile of the archetypes.
 
         allFeatNames:
             Optional input. list of all feature names.
-        selectedFeatsIdxs:
+        featIDs:
             Optional input. list of names of features of interest.
         """
         if len(archIDs) == 0:
             raise Exception("Archetype IDs can't be empty!")
         sns.set_style('ticks')
-        xVals = np.arange(1, len(selectedFeatsIdxs) + 1)
+        xVals = np.arange(1, len(featIDs) + 1)
         for i in archIDs:
             plt.figure(figsize=figSize, dpi=dpi)
-            plt.bar(xVals, self.archetypeProfile[selectedFeatsIdxs, i] * 100.0, 
+            plt.bar(xVals, self.archetypeProfile[featIDs, i] * 100.0, 
                     color='#D32F2F', edgecolor='#212121', linewidth=0.8)
             if (allFeatNames != None):
-                plt.xticks(xVals, [allFeatNames[idx] for idx in selectedFeatsIdxs], rotation='vertical')
+                plt.xticks(xVals, [allFeatNames[idx] for idx in featIDs], rotation='vertical')
             plt.ylim([0, 100])
             plt.ylabel('A' + str(i + 1))
             plt.grid(linestyle='dotted')
@@ -642,15 +656,17 @@ class ArchetypalAnalysis():
             plt.savefig(f"{FIGS_DIR_PATH}/{figNamePrefix}_A{i+1}_featProf.png", bbox_inches='tight')
             
     
-    def plotRadarProfile(self, allFeatNames=None, selectedFeatsIdxs=[0], archIDs=[], 
-                           sepArchs=False, showLabel=True, labelAll=False, showName=False,
-                           figSize=(6, 6), dpi=DPI, title=None, figNamePrefix=''):
-
+    def plotRadarProfile(self, allFeatNames=None, featIDs=[0], archIDs=[0, 1], fillAlpha=0.2,
+                         sepArchs=False, showLabel=True, labelAll=False, showName=False,
+                         figSize=(6, 6), dpi=DPI, title=None, figNamePrefix=''):
+        if len(archIDs) == 0: 
+            raise Exception("Archetype IDs can't be empty!")
+        if len(featIDs) < 1: 
+            raise Exception('No feature is selected!')  
+        
         # Getting labels
-        if len(selectedFeatsIdxs) < 1: 
-            raise Exception('selectedFeatsIdxs < 1!')
-        labels = [allFeatNames[i] for i in selectedFeatsIdxs] if showName else [f"F{i}" for i in selectedFeatsIdxs]
-        angles = np.linspace(0, 2*np.pi, len(selectedFeatsIdxs), endpoint=False)
+        labels = [allFeatNames[i] for i in featIDs] if showName else [f"F{i}" for i in featIDs]
+        angles = np.linspace(0, 2*np.pi, len(featIDs), endpoint=False)
         angles = np.concatenate((angles, [angles[0]]))
 
         if not sepArchs:
@@ -662,10 +678,10 @@ class ArchetypalAnalysis():
                 fig = plt.figure(figsize=figSize, dpi=dpi)
                 ax = fig.add_subplot(111, polar=True)
             c = sns.color_palette('husl', len(archIDs))[i]
-            xClose = self.archetypeProfile[selectedFeatsIdxs, archID]
+            xClose = self.archetypeProfile[featIDs, archID]
             xClose = np.concatenate((xClose, [xClose[0]]))
             ax.plot(angles, xClose, '.-', linewidth=1, markersize=5, zorder=-1, color=c)
-            ax.fill(angles, xClose, alpha=0.2, zorder=-2, color=c)
+            ax.fill(angles, xClose, alpha=fillAlpha, zorder=-2, color=c)
             # ax.set_rlabel_position(0)
             ax.set_rticks([0.2, 0.4, 0.6, 0.8])
             ax.set_rlim(0.0, 1.0)
@@ -676,7 +692,7 @@ class ArchetypalAnalysis():
                     labelIdxs = np.round(np.linspace(0, len(angles)-1, 9)[:-1]).astype(int)
                 ax.set_thetagrids(angles[labelIdxs] * 180.0/np.pi, [labels[idx] for idx in labelIdxs])
             else:
-                ax.set_thetagrids(angles * 180.0/np.pi, [''] + [''] * len(selectedFeatsIdxs))
+                ax.set_thetagrids(angles * 180.0/np.pi, [''] + [''] * len(featIDs))
             ax.set_title(title)
             ax.grid(linestyle='dotted', color='k', alpha=0.3, linewidth=1)
             ax.set_facecolor('#EAECEE')
@@ -697,21 +713,57 @@ class ArchetypalAnalysis():
             self.closeMatch[i + 1] = (iMin, self.alfa[:, iMin])
             
     
-    def plotCloseMatch(self, title='Radar plot of closest matches'):
+    def plotCloseMatch(self, archIDs=[0, 1], archSpaceIDs=[0, 1], 
+                       sepSamps=False, showLabel=True, labelAll=False, showLegend=False,
+                       figSize=(6, 6), dpi=DPI, title=None, figNamePrefix=''):
+        if len(archIDs) == 0 or len(archSpaceIDs) == 0: 
+            raise Exception("Archetype IDs can't be empty!")
+
+        # Extract most archetypal samples if not done
         if (len(self.closeMatch) == 0):
             self._extractCloseMatch()
-        labels = ['A' + str(i+1) for i in range(self.nArchetypes)]
-        angles = np.linspace(0, 2*np.pi, self.nArchetypes, endpoint = False)
-        angles = np.concatenate((angles, [angles[0]])) 
-        
-        fig = plt.figure(figsize=(3, 3))
-        ax = fig.add_subplot(111, polar=True)
-        for i in range(1, self.nArchetypes + 1):
-            xClose = self.closeMatch[i][1]
+            
+        # Getting labels
+        labels = [f"A{i+1}" for i in archSpaceIDs]
+        angles = np.linspace(0, 2*np.pi, len(archSpaceIDs), endpoint=False)
+        angles = np.concatenate((angles, [angles[0]]))
+        if not sepSamps:
+            fig = plt.figure(figsize=figSize, dpi=dpi)
+            ax = fig.add_subplot(111, polar=True)
+            if showLegend:
+                legend = []
+        for (i, archID) in enumerate(archIDs):
+            if sepSamps:
+                fig = plt.figure(figsize=figSize, dpi=dpi)
+                ax = fig.add_subplot(111, polar=True)
+            c = sns.color_palette('husl', len(archIDs))[i]
+            xClose = self.closeMatch[archID + 1][1][archSpaceIDs]
             xClose = np.concatenate((xClose, [xClose[0]]))
-            ax.plot(angles, xClose, 'o-', linewidth=2)
-            ax.fill(angles, xClose, alpha=0.25)
-            ax.set_thetagrids(np.array(angles) * 180.0/np.pi, ['0'] + labels)
+            ax.plot(angles, xClose, '.-', linewidth=1, markersize=5, zorder=-1, color=c)
+            ax.fill(angles, xClose, alpha=0.2, zorder=-2, color=c)
+            # ax.set_rlabel_position(0)
+            ax.set_rticks([0.2, 0.4, 0.6, 0.8])
+            ax.set_rlim(0.0, 1.0)
+            if showLabel:
+                if not labelAll and len(archSpaceIDs) < 8: 
+                    print('Number of labels <8, nullifying `labelAll`, showing all labels...')
+                    labelAll = True
+                if labelAll:
+                    labelIdxs = [j for j in range(len(angles) - 1)]
+                else:  # Only label 8 standard corners
+                    labelIdxs = np.round(np.linspace(0, len(angles)-1, 9)[:-1]).astype(int)
+                ax.set_thetagrids(angles[labelIdxs] * 180.0/np.pi, [labels[idx] for idx in labelIdxs])
+            else:
+                ax.set_thetagrids(angles * 180.0/np.pi, [''] + [''] * len(archIDs))
             ax.set_title(title)
-            ax.grid(True)
-        ax.set_facecolor('#EAECEE')
+            ax.grid(linestyle='dotted', color='k', alpha=0.3, linewidth=1)
+            ax.set_facecolor('#EAECEE')
+            if not sepSamps:
+                if showLegend:
+                    legend.extend([f"A{archID + 1}", '_'])
+            else:
+                plt.savefig(f"{FIGS_DIR_PATH}/{figNamePrefix}_closeMatch_A{archID + 1}.png", bbox_inches='tight')
+        if not sepSamps:
+            if showLegend:
+                ax.legend(legend, loc='center', bbox_to_anchor=(1.2, 0.5), ncol=1)
+            plt.savefig(f"{FIGS_DIR_PATH}/{figNamePrefix}_closeMatch.png", bbox_inches='tight')

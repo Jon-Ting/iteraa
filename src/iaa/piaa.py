@@ -1,5 +1,5 @@
-from os import mkdir, listdir
-from os.path import isfile
+from os import listdir, mkdir
+from os.path import exists, isfile
 import pickle
 from subprocess import run
 import sys
@@ -11,11 +11,11 @@ from sklearn.metrics import explained_variance_score
 from sklearn.model_selection import KFold
 from spams import archetypalAnalysis
 
-from iaa.constants import RANDOM_STATE, NUM_JOBS, PALETTE, DPI, SUBSETS_PICKLES_PATH, OUTPUTS_PICKLES_PATH, JOBSCRIPTS_DIR_PATH
+from iaa.constants import RANDOM_STATE, NUM_JOBS, PALETTE, DPI, SUBSETS_PICKLES_PATH, OUTPUTS_PICKLES_PATH, JOBSCRIPTS_DIR_PATH, AA_SCRIPT_PATH
 from iaa.iaa import ArchetypalAnalysis
 
 
-def subsetSplit(X, nSubsets, dataName, subsetsPicklesPath=SUBSETS_PICKLES_PATH,
+def subsetSplit(X, nSubsets, dataName, subsetsSampleIdxs=[], subsetsPicklesPath=SUBSETS_PICKLES_PATH,
                 shuffle=True, randomState=RANDOM_STATE, verbose=False):
     """Split data into subsets.
 
@@ -32,18 +32,54 @@ def subsetSplit(X, nSubsets, dataName, subsetsPicklesPath=SUBSETS_PICKLES_PATH,
     startTime = time()
     if verbose:
         print(f"Splitting data into {nSubsets} subsets...")
-    kFold = KFold(n_splits=nSubsets, shuffle=shuffle, random_state=randomState)
+    if len(subsetsSampleIdxs) == 0:
+        kFold = KFold(n_splits=nSubsets, shuffle=shuffle, random_state=randomState)
+        subsetsSampleIdxs = [idxs for (_, idxs) in kFold.split(X)]
+        
     subsetsAs, subsetsBs = [], []
-    for (i, (_, idxs)) in enumerate(kFold.split(X)):
+    for (i, idxs) in enumerate(subsetsSampleIdxs):
         if verbose:
             print(f"  Subset {i + 1}")
         with open(f"{subsetsPicklesPath}/{dataName}data{i + 1}.pkl", 'wb') as f:
             pickle.dump((idxs, X[idxs, :].T), f)  # subsetX
+            
     runTime = time() - startTime
+    if verbose:
+        print(f"Time spent on subset-splitting: {runTime:.3f} s")
+        
     return runTime
 
 
-def runAA(fName, nArchetypes, outputsPicklesPath=OUTPUTS_PICKLES_PATH, 
+def submitAAjobs(nArchetypes, dataName, splitKeyword='data',
+                 jobscriptsDirPath=JOBSCRIPTS_DIR_PATH, 
+                 subsetsPicklesPath=SUBSETS_PICKLES_PATH,
+                 outputsPicklesPath=OUTPUTS_PICKLES_PATH, 
+                 AAscriptPath=AA_SCRIPT_PATH,
+                 project='q27', queue='normal', numCPUs=48, wallTime='00:05:00', mem=5, jobFS=1, email='Jonathan.Ting@anu.edu.au',
+                 verbose=False):
+    subsetsPickles = [fName for fName in listdir(subsetsPicklesPath) 
+                      if isfile(f"{subsetsPicklesPath}/{fName}") and f"{dataName}{splitKeyword}" in fName and '.pkl' in fName]
+    if verbose:
+        print('Generating archetypal analysis HPC jobs for all subsets...')
+    if not exists(jobscriptsDirPath):
+        mkdir(jobscriptsDirPath)
+    for subsetsPickle in subsetsPickles:
+        jobscriptPath = f"{jobscriptsDirPath}/{subsetsPickle.split('.')[0]}.sh"
+        with open(jobscriptPath, 'w') as f:
+            f.write(f"#!/bin/bash\n#PBS -P {project}\n#PBS -q {queue}\n")
+            f.write(f"#PBS -l ncpus={numCPUs},walltime={wallTime},mem={mem}GB,jobfs={jobFS}GB\n")
+            f.write(f"#PBS -l storage=scratch/{project}\n#PBS -l wd\n")
+            f.write(f"#PBS -M {email}\n#PBS -m a\n\n")
+            f.write("module load python3/3.10.4\n\n")
+            f.write(f"cd $PBS_O_WORKDIR\npython3 {AAscriptPath} {subsetsPicklesPath}/{subsetsPickle} {nArchetypes} {outputsPicklesPath} {splitKeyword}")
+        run(['qsub', jobscriptPath])
+        if verbose:
+            print(f"  Submitted job for {subsetsPickle}...")
+    if verbose:
+        print(f"All jobs submitted!")
+
+
+def runAA(fName, nArchetypes, outputsPicklesPath=OUTPUTS_PICKLES_PATH, splitKeyword='data',
           robust=False, tolerance=0.001, computeXtX=False, stepsFISTA=3, stepsAS=50, 
           randominit=False, numThreads=-1, onlyZ=False):
     """Executes archetypal analysis.
@@ -64,9 +100,8 @@ def runAA(fName, nArchetypes, outputsPicklesPath=OUTPUTS_PICKLES_PATH,
                                                       returnAB=True, robust=robust, epsilon=tolerance, computeXtX=computeXtX, 
                                                       stepsFISTA=stepsFISTA, stepsAS=stepsAS, randominit=randominit, 
                                                       numThreads=numThreads)
-    print(subsetZ)
-    dataName = fName.split('/')[-1].split('data')[0]
-    subsetID = fName.split('data')[-1].split('.pkl')[0]
+    dataName = fName.split('/')[-1].split(splitKeyword)[0]
+    subsetID = fName.split(splitKeyword)[-1].split('.pkl')[0]
     outputsDict = {'subsetZ': subsetZ, 'runTime': time() - startTime}
     if not onlyZ:    
         outputsDict['subsetA'] = subsetA.toarray()
@@ -94,7 +129,7 @@ def fitPIAA(X, nArchetypes, numSubset, dataName, outputsPicklesPath=OUTPUTS_PICK
     """
     startTime = time()
     # Initialise AA object to be filled in
-    AA = ArchetypalAnalysis(nArchetypes=nArchetypes, iterative=True, robust=robust, onlyZ=onlyZ, nSubsets=numSubset, shuffle=shuffle, 
+    AA = ArchetypalAnalysis(nArchetypes=nArchetypes, iterative=True, robust=robust, onlyZ=onlyZ,  subsetsSampleIdxs=[], nSubsets=numSubset, shuffle=shuffle, 
                             C=C, tolerance=tolerance, computeXtX=computeXtX, stepsFISTA=stepsFISTA, stepsAS=stepsAS, randominit=randominit, 
                             randomState=randomState, numThreads=numThreads)
     AA.X = X.T
@@ -113,6 +148,8 @@ def fitPIAA(X, nArchetypes, numSubset, dataName, outputsPicklesPath=OUTPUTS_PICK
         subsetsBs.append(outputsDict['subsetB'])
         AA.subsetsSampleIdxs.append(outputsDict['subsetsSampleIdxs'])
         runTimes.append(outputsDict['runTime'])
+        if verbose:
+            print(f": {outputsDict['runTime']} s")
     allSubsetsZs = np.concatenate(AA.subsetsZs, axis=1)  # (m*(k*p))
     AA.archetypes, Afinal, Bfinal = archetypalAnalysis(np.asfortranarray(allSubsetsZs), Z0=None, p=nArchetypes, 
                                                          returnAB=True, robust=robust, epsilon=tolerance, computeXtX=computeXtX, 
@@ -120,7 +157,7 @@ def fitPIAA(X, nArchetypes, numSubset, dataName, outputsPicklesPath=OUTPUTS_PICK
                                                          numThreads=numThreads)
     AA.runTime = time() - startTime + splitRunTime + max(runTimes)
     if AA.onlyZ:
-        return
+        return AA
     # Rearrange the sample indices for subsequent comparison with the original data
     allSampleIdxs = np.concatenate(AA.subsetsSampleIdxs, axis=0)
     sortedXapproxIdxs = np.array(sorted(zip(range(len(allSampleIdxs)), allSampleIdxs), key=lambda tup: tup[1]))[:, 0]
@@ -150,36 +187,5 @@ def fitPIAA(X, nArchetypes, numSubset, dataName, outputsPicklesPath=OUTPUTS_PICK
     return AA
 
 
-def submitAAjobs(nArchetypes, 
-                 dataName, 
-                 jobscriptsDirPath=JOBSCRIPTS_DIR_PATH, 
-                 subsetsPicklesPath=SUBSETS_PICKLES_PATH,
-                 outputsPicklesPath=OUTPUTS_PICKLES_PATH, 
-                
-                 project='q27', queue='normal', numCPUs=48, wallTime='00:05:00', mem=5, jobFS=1,
-                 email = 'Jonathan.Ting@anu.edu.au',
-                 verbose=False):
-    if not exists(jobscriptsDirPath):
-        mkdir(jobscriptsDirPath)
-    subsetsPickles = [fName for fName in listdir(subsetsPicklesPath) if dataName in fName and '.pkl' in fName]
-    if verbose:
-        print('Generating archetypal analysis HPC jobs for all subsets...')
-    for subsetsPickle in subsetsPickles:
-        jobscriptPath = f"{jobscriptsDirPath}/{subsetsPickle.split('.')[0]}.sh"
-        with open(jobscriptPath, 'w') as f:
-            f.write(f"!/bin/bash\n#PBS -P {project}\n#PBS -q {queue}\n")
-            f.write(f"#PBS -l ncpus={numCPUs},walltime={wallTime},mem={mem}GB,jobfs={jobFS}GB\n")
-            f.write(f"#PBS -l storage=scratch/{project}\n#PBS -l wd\n")
-            f.write(f"#PBS -M {email}\n#PBS -m a\n\n")
-            f.write("module load python3/3.10.4\n\n")
-            f.write(f"cd $PBS_O_WORKDIR\npython3 {subsetsPickle} {nArchetypes} {outputsPicklesPath}")
-        run(['qsub', jobscriptPath])
-        if verbose:
-            print(f"  Submitted job for {subsetsPickle}...")
-    if verbose:
-        print(f"All jobs submitted!")
-    return 
-
-
 if __name__ == '__main__':
-    runAA(fName=sys.argv[1], nArchetypes=int(sys.argv[2]), outputsPicklesPath=sys.argv[3])
+    runAA(fName=sys.argv[1], nArchetypes=int(sys.argv[2]), outputsPicklesPath=sys.argv[3], splitKeyword=sys.argv[4])
