@@ -5,10 +5,15 @@
 `IAA` is a package that provides functionalities to conduct accelerated archetypal analysis via an iterative approach.
 
 ## Background
-* Archetypal analysis ... TODO
+* Archetypal analysis is an unsupervised learning technique that uses a convex polytope to summarise multivariate data.
+* The classical algorithm involves an alternating minimisation algorithm, which grows quadratically in complexity.
+* An iterative approach could be implemented to accelerate the execution of the archetypal analysis algorithm.
+* The acceleration achieved by the iterative approach is in addition to the acceleration as a result of the optimisation of other portions of the algorithm execution, as was typically done in the past.
 
 ## Features
-* Utilisation of high-performance-computing cluster (under development) ... TODO
+* Implementation of an iterative approach to conduct archetypal analysis.
+* Implementation of a parallelised iterative approach to conduct archetypal analysis.
+* Utilisation of high-performance-computing cluster for parallelisation of individual archetypal analysis execution on data subsets.
 
 ## Installation
 
@@ -32,22 +37,22 @@ aa = ArchetypalAnalysis()
 aa.fit(X)
 ```
 
-Check out the notebooks for demonstrations of the [iterative]() and [parallel iterative]() approaches.
+Check out the notebooks for demonstrations of the [iterative](https://github.com/Jon-Ting/iaa/blob/main/docs/iaaDemo.ipynb) and [parallel iterative](https://github.com/Jon-Ting/iaa/blob/main/docs/piaaDemo.ipynb) approaches.
 
 ## Documentation
 
-Detailed [documentations]() are hosted by `Read the Docs`.
+Detailed [documentations](https://iaa.readthedocs.io/en/latest/) are hosted by `Read the Docs`.
 
 ## Contributing
 
 `IAA` appreciates your enthusiasm and welcomes your expertise!
 
-Please check out the [contributing guidelines]() and [code of conduct](). 
+Please check out the [contributing guidelines](https://github.com/Jon-Ting/iaa/blob/main/CONTRIBUTING.md) and [code of conduct](https://github.com/Jon-Ting/iaa/blob/main/CONDUCT.md). 
 By contributing to this project, you agree to abide by its terms.
 
 ## License
 
-The project was created by Jonathan Yik Chang Ting. It is licensed under the terms of the [MIT license]().
+The project was created by Jonathan Yik Chang Ting. It is licensed under the terms of the [MIT license](https://github.com/Jon-Ting/iaa/blob/main/LICENSE).
 
 ## Credits
 
