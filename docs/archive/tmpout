@@ -1,0 +1,66 @@
+RSS FISTA = 1292124.2
+RSS FISTA = 854200.49
+RSS FISTA = 754253.08
+RSS AS = 603743.06
+RSS AS = 563823.45
+RSS AS = 542876.51
+RSS AS = 529907.74
+RSS AS = 520067.23
+RSS AS = 514131.74
+RSS AS = 509434.52
+RSS AS = 505880.42
+RSS AS = 503102.75
+RSS AS = 501091.08
+RSS AS = 499608.37
+RSS AS = 498282.74
+RSS AS = 496861.69
+RSS AS = 495557.85
+RSS AS = 494479.42
+RSS AS = 493563.9
+RSS AS = 492695.36
+RSS AS = 491847.39
+RSS AS = 491089.89
+RSS AS = 490437.14
+RSS AS = 489912.46
+RSS AS = 489466.7
+RSS AS = 489074.29
+RSS AS = 488619.4
+RSS AS = 488026.99
+RSS AS = 487433.8
+RSS AS = 487013.31
+RSS AS = 486561.32
+RSS AS = 486102.87
+RSS AS = 485512.87
+RSS AS = 485095.24
+RSS AS = 484747.17
+RSS AS = 484415.86
+RSS AS = 484090
+RSS AS = 483694.89
+RSS AS = 483207.76
+RSS AS = 482804.84
+RSS AS = 482463.72
+RSS AS = 482133.79
+RSS AS = 481805.86
+RSS AS = 481458.5
+RSS AS = 481092.19
+RSS AS = 480645.5
+RSS AS = 480083.27
+RSS AS = 479574.03
+RSS AS = 479286.54
+RSS AS = 479037.7
+RSS AS = 478759.18
+RSS AS = 478441.73
+RSS AS = 478152.43
+
+======================================================================================
+                  Resource Usage on 2024-07-16 16:12:33:
+   Job Id:             120892146.gadi-pbs
+   Project:            q27
+   Exit Status:        0
+   Service Units:      127.15
+   NCPUs Requested:    48                     NCPUs Used: 48              
+                                           CPU Time Used: 03:09:49        
+   Memory Requested:   120.0GB               Memory Used: 390.31MB        
+   Walltime requested: 20:00:00            Walltime Used: 01:19:28        
+   JobFS requested:    10.0GB                 JobFS used: 0B              
+======================================================================================
