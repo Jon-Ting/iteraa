@@ -303,10 +303,11 @@ def mapAlfaToSimplex(alfa, AA):
     return mappedAlfa
 
 
-def plotTSNE(X, figNamePrefix='', figSize=(3, 3), markerSize=1, numComponents=2, markIdxs=[],
-              perplexity=30.0, earlyExaggeration=12.0, learningRate='auto', nIter=1000, angle=0.5, 
-              metric='euclidean', init='pca', method='barnes_hut', minGradNorm=1e-7, 
-              nIterWithoutProgress=300, nJobs=NUM_JOBS, randomState=RANDOM_STATE):
+def plotTSNE(X, figNamePrefix='', figSize=(3, 3), numComponents=2, markIdxs=[],
+             markerSize=1, colourInstances=False, 
+             perplexity=30.0, earlyExaggeration=12.0, learningRate='auto', nIter=1000, angle=0.5, 
+             metric='euclidean', init='pca', method='barnes_hut', minGradNorm=1e-7, 
+             nIterWithoutProgress=300, nJobs=NUM_JOBS, randomState=RANDOM_STATE):
     """Conduct t-stochastic neighbour embedding and visualise the results.
 
     Parameters
@@ -327,9 +328,14 @@ def plotTSNE(X, figNamePrefix='', figSize=(3, 3), markerSize=1, numComponents=2,
                    n_iter_without_progress=nIterWithoutProgress, min_grad_norm=minGradNorm, metric=metric, 
                    verbose=0, n_jobs=nJobs)
     embedding = reducer.fit_transform(X)
-    sns.set_palette('icefire')
+    # sns.set_palette('icefire')
     plt.figure(figsize=figSize, dpi=DPI)
-    plt.scatter(x=embedding[:, 0], y=embedding[:, 1], s=markerSize, c=range(len(X)), cmap=PALETTE)
+    
+    if colourInstances:
+        c, palette = range(len(X)), PALETTE
+    else:
+        c, palette = 'k', None
+    plt.scatter(x=embedding[:, 0], y=embedding[:, 1], s=markerSize, c=c, cmap=palette)
     # c=[sns.color_palette()[x] for x in penguins.species.map({"Adelie":0, "Chinstrap":1, "Gentoo":2})])
     plt.scatter(x=embedding[markIdxs, 0], y=embedding[markIdxs, 1], marker='D', s=markerSize*30, facecolor='r', edgecolor='k', linewidth=0.8)
     plt.grid(linestyle='dotted')
@@ -337,4 +343,3 @@ def plotTSNE(X, figNamePrefix='', figSize=(3, 3), markerSize=1, numComponents=2,
     plt.ylabel('Dimension 2')
     plt.gca().set_aspect('equal', 'datalim')
     plt.savefig(f"figs/{figNamePrefix}_tSNE.png", bbox_inches='tight')
-

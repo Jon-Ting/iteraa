@@ -442,8 +442,11 @@ class ArchetypalAnalysis():
         self.beta = self.beta[:,rank]
    
     
-    def plotSimplex(self, alfa, archIDs=[0, 1, 2], plotArgs={}, gridOn=True, showLabel=True, labelAll=False, 
-                    figSize=(3, 3), dpi=DPI, gridLineWidth=0.1, markerSize=20, figNamePrefix=''):
+    def plotSimplex(self, alfa, archIDs=[0, 1, 2], plotArgs={}, 
+                    gridOn=True, showLabel=True, labelAll=False, 
+                    figSize=(3, 3), dpi=DPI, 
+                    gridLineWidth=0.1, color='#303F9F', alpha=0.8, markerSize=20, 
+                    figNamePrefix=''):
         """
         # groupColor = None, color = None, marker = None, size = None
         groupColor:    
@@ -524,7 +527,8 @@ class ArchetypalAnalysis():
 
         ax.plot(lstAx0, lstAx1, linewidth=1, zorder=2, color='k')  #, **edgeArgs) 
         if len(plotArgs) == 0:
-            ax.scatter(newdata[:, 0], newdata[:, 1], color='#303F9F', zorder=3, alpha=0.8, s=markerSize)
+            ax.scatter(newdata[:, 0], newdata[:, 1], color=color, zorder=3, alpha=alpha, s=markerSize,
+                       edgecolor='k', linewidth=0.8)
         else:
             if ('marker' in plotArgs):   
                 markerVals = plotArgs['marker'].values
@@ -536,9 +540,9 @@ class ArchetypalAnalysis():
                     for keys in plotArgs:
                         if (keys!= 'marker'):
                             tmpArg[keys] = plotArgs[keys].values[rowIdx]
-                    ax.scatter(newdata[rowIdx,0], newdata[rowIdx,1], **tmpArg, marker=marker, edgecolor='k', alpha=0.8, zorder=3)
+                    ax.scatter(newdata[rowIdx,0], newdata[rowIdx,1], **tmpArg, marker=marker, edgecolor='k', alpha=alpha, zorder=3)
             else:
-                ax.scatter(newdata[:,0], newdata[:,1], **plotArgs, marker='s', zorder=3, alpha=0.5)
+                ax.scatter(newdata[:,0], newdata[:,1], **plotArgs, marker='s', zorder=3, alpha=alpha)
         # plt.savefig(f"{FIGS_DIR_PATH}/{figNamePrefix}_simplex.png", bbox_inches='tight')
             
                
