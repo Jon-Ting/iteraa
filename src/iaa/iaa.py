@@ -543,7 +543,7 @@ class ArchetypalAnalysis():
                     ax.scatter(newdata[rowIdx,0], newdata[rowIdx,1], **tmpArg, marker=marker, edgecolor='k', alpha=alpha, zorder=3)
             else:
                 ax.scatter(newdata[:,0], newdata[:,1], **plotArgs, marker='s', zorder=3, alpha=alpha)
-        # plt.savefig(f"{FIGS_DIR_PATH}/{figNamePrefix}_simplex.png", bbox_inches='tight')
+        plt.savefig(f"{FIGS_DIR_PATH}/{figNamePrefix}_simplex.png", bbox_inches='tight')
             
                
     def parallelPlot(self, lstFeat, dfColor, featIDs=[0, 1, 2], archIDs=[0, 1, 2], sampIDs=[0, 1, 2], 
