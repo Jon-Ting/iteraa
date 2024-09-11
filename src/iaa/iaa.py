@@ -660,7 +660,7 @@ class ArchetypalAnalysis():
             plt.savefig(f"{FIGS_DIR_PATH}/{figNamePrefix}_A{i+1}_featProf.png", bbox_inches='tight')
             
     
-    def plotRadarProfile(self, allFeatNames=None, featIDs=[0], archIDs=[0, 1], fillAlpha=0.2,
+    def plotRadarProfile(self, allFeatNames=None, featIDs=[0], archIDs=[0, 1], fillAlpha=0.2, linewidth=1,
                          sepArchs=False, showLabel=True, labelAll=False, showName=False,
                          figSize=(6, 6), dpi=DPI, title=None, figNamePrefix=''):
         if len(archIDs) == 0: 
@@ -684,7 +684,7 @@ class ArchetypalAnalysis():
             c = sns.color_palette('husl', len(archIDs))[i]
             xClose = self.archetypeProfile[featIDs, archID]
             xClose = np.concatenate((xClose, [xClose[0]]))
-            ax.plot(angles, xClose, '.-', linewidth=1, markersize=5, zorder=-1, color=c)
+            ax.plot(angles, xClose, '.-', linewidth=linewidth, markersize=5, zorder=-1, color=c)
             ax.fill(angles, xClose, alpha=fillAlpha, zorder=-2, color=c)
             # ax.set_rlabel_position(0)
             ax.set_rticks([0.2, 0.4, 0.6, 0.8])
@@ -707,6 +707,7 @@ class ArchetypalAnalysis():
         if not sepArchs:
             ax.legend(legend, loc='center', bbox_to_anchor=(1.2, 0.5), ncol=1)
             plt.savefig(f"{FIGS_DIR_PATH}/{figNamePrefix}_radarProf.png", bbox_inches='tight')
+        plt.close()
         
     
     def _extractCloseMatch(self):
