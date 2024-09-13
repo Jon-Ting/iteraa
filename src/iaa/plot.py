@@ -170,7 +170,7 @@ def plotRadarDatapoints(AA, X, sampIDs=[0], archSpaceIDs=[0, 1],
         ax = fig.add_subplot(111, polar=True)
         if showLegend:
             legend = []
-    for (i, sampID) in enumerate(range(len(sampIDs))):
+    for (i, sampID) in enumerate(sampIDs):
         if sepSamps:
             fig = plt.figure(figsize=figSize, dpi=dpi)
             ax = fig.add_subplot(111, polar=True)

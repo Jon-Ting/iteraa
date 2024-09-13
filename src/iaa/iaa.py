@@ -661,7 +661,7 @@ class ArchetypalAnalysis():
             
     
     def plotRadarProfile(self, allFeatNames=None, featIDs=[0], archIDs=[0, 1], fillAlpha=0.2, linewidth=1,
-                         sepArchs=False, showLabel=True, labelAll=False, showName=False,
+                         sepArchs=False, showLabel=True, labelAll=False, showName=False, closeFig=False,
                          figSize=(6, 6), dpi=DPI, title=None, figNamePrefix=''):
         if len(archIDs) == 0: 
             raise Exception("Archetype IDs can't be empty!")
@@ -677,7 +677,7 @@ class ArchetypalAnalysis():
             fig = plt.figure(figsize=figSize, dpi=dpi)
             ax = fig.add_subplot(111, polar=True)
             legend = []
-        for (i, archID) in enumerate(range(len(archIDs))):
+        for (i, archID) in enumerate(archIDs):
             if sepArchs:
                 fig = plt.figure(figsize=figSize, dpi=dpi)
                 ax = fig.add_subplot(111, polar=True)
@@ -704,10 +704,11 @@ class ArchetypalAnalysis():
                 legend.extend([f"A{archID + 1}", '_'])
             else:
                 plt.savefig(f"{FIGS_DIR_PATH}/{figNamePrefix}_radarProf_A{archID + 1}.png", bbox_inches='tight')
+                if closeFig:
+                    plt.close()
         if not sepArchs:
             ax.legend(legend, loc='center', bbox_to_anchor=(1.2, 0.5), ncol=1)
             plt.savefig(f"{FIGS_DIR_PATH}/{figNamePrefix}_radarProf.png", bbox_inches='tight')
-        plt.close()
         
     
     def _extractCloseMatch(self):
