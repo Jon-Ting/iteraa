@@ -15,7 +15,7 @@ from iaa.constants import RANDOM_STATE, NUM_JOBS, PALETTE, DPI, SUBSETS_PICKLES_
 from iaa.iaa import ArchetypalAnalysis
 
 
-def subsetSplit(X, nSubsets, dataName, subsetsSampleIdxs=[], subsetsPicklesPath=SUBSETS_PICKLES_PATH,
+def subsetSplit(X, nSubsets, dataName, subsetsSampleIdxs=[], subsetsPicklesPath=SUBSETS_PICKLES_PATH, postfixStr='',
                 shuffle=True, randomState=RANDOM_STATE, verbose=False):
     """Split data into subsets.
 
@@ -40,7 +40,7 @@ def subsetSplit(X, nSubsets, dataName, subsetsSampleIdxs=[], subsetsPicklesPath=
     for (i, idxs) in enumerate(subsetsSampleIdxs):
         if verbose:
             print(f"  Subset {i + 1}")
-        with open(f"{subsetsPicklesPath}/{dataName}data{i + 1}.pkl", 'wb') as f:
+        with open(f"{subsetsPicklesPath}/{dataName}data{i + 1}{postfixStr}.pkl", 'wb') as f:
             pickle.dump((idxs, X[idxs, :].T), f)  # subsetX
             
     runTime = time() - startTime
@@ -50,7 +50,7 @@ def subsetSplit(X, nSubsets, dataName, subsetsSampleIdxs=[], subsetsPicklesPath=
     return runTime
 
 
-def submitAAjobs(nArchetypes, dataName, splitKeyword='data',
+def submitAAjobs(nArchetypes, dataName, splitKeyword='data', postfixStr='', 
                  jobscriptsDirPath=JOBSCRIPTS_DIR_PATH, 
                  subsetsPicklesPath=SUBSETS_PICKLES_PATH,
                  outputsPicklesPath=OUTPUTS_PICKLES_PATH, 
@@ -58,7 +58,7 @@ def submitAAjobs(nArchetypes, dataName, splitKeyword='data',
                  project='q27', queue='normal', numCPUs=48, wallTime='00:05:00', mem=5, jobFS=1, email='Jonathan.Ting@anu.edu.au',
                  verbose=False):
     subsetsPickles = [fName for fName in listdir(subsetsPicklesPath) 
-                      if isfile(f"{subsetsPicklesPath}/{fName}") and f"{dataName}{splitKeyword}" in fName and '.pkl' in fName]
+                      if isfile(f"{subsetsPicklesPath}/{fName}") and f"{dataName}{splitKeyword}" in fName and f"{postfixStr}.pkl" in fName]
     if verbose:
         print('Generating archetypal analysis HPC jobs for all subsets...')
     if not exists(jobscriptsDirPath):
@@ -111,7 +111,7 @@ def runAA(fName, nArchetypes, outputsPicklesPath=OUTPUTS_PICKLES_PATH, splitKeyw
         pickle.dump(outputsDict, f)
 
 
-def fitPIAA(X, nArchetypes, numSubset, dataName, outputsPicklesPath=OUTPUTS_PICKLES_PATH,
+def fitPIAA(X, nArchetypes, numSubset, dataName, outputsPicklesPath=OUTPUTS_PICKLES_PATH, postfixStr='', 
             shuffle=True, robust=False, onlyZ=False, C=0.0001, tolerance=0.001, computeXtX=False, 
             stepsFISTA=3, stepsAS=50, randominit=False, randomState=RANDOM_STATE, numThreads=-1, 
             splitRunTime=0.0, verbose=True):
@@ -137,7 +137,7 @@ def fitPIAA(X, nArchetypes, numSubset, dataName, outputsPicklesPath=OUTPUTS_PICK
     
     AA.subsetsZs, subsetsAs, subsetsBs, AA.sampleIdxs, runTimes = [], [], [], [], []
     for fName in natsorted(listdir(outputsPicklesPath)):
-        if not isfile(f"{outputsPicklesPath}/{fName}") or '.pkl' not in fName or f"{dataName}output" not in fName:
+        if not isfile(f"{outputsPicklesPath}/{fName}") or f"{dataName}output" not in fName or f"{postfixStr}.pkl" not in fName:
             continue
         if verbose:
             print(f"  Subset: {fName}")
