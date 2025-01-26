@@ -10,7 +10,7 @@ def getExampleDataPath():
     xyzFilePath : str
         Path to xyz file.
     """
-    xyzFilePath = str(files('iaa.data').joinpath('exampleOT.xyz'))
+    xyzFilePath = str(files('iteraa.data').joinpath('exampleOT.xyz'))
     return xyzFilePath
 
 
@@ -22,7 +22,7 @@ def getStrongScalingDataPath():
     xyzFilePath : str
         Path to xyz file.
     """
-    return str(files('iaa.data').joinpath('strongScalingSP.xyz'))
+    return str(files('iteraa.data').joinpath('strongScalingSP.xyz'))
     return xyzFilePath
 
 
@@ -34,7 +34,7 @@ def getWeakScalingDataPaths():
     xyzFilePaths : list of str
         Paths to xyz files.
     """
-    dataDir = str(files('iaa.data'))
+    dataDir = str(files('iteraa.data'))
     xyzFilePaths = []
     for fileName in listdir(dataDir):
         if 'weakScaling' in fileName:
@@ -50,7 +50,7 @@ def getValidationDataPath():
     xyzFilePath : str
         Path to xyz file.
     """
-    xyzFilePath = str(files('iaa.data').joinpath('singleAtom.xyz'))
+    xyzFilePath = str(files('iteraa.data').joinpath('singleAtom.xyz'))
     return xyzFilePath
 
 
@@ -62,7 +62,7 @@ def getCaseStudyDataPaths():
     xyzFilePaths : list of str
         Paths to xyz files.
     """
-    dataDir = str(files('iaa.data'))
+    dataDir = str(files('iteraa.data'))
     xyzFilePaths = []
     for fileName in listdir(dataDir):
         if 'caseStudy' in fileName:

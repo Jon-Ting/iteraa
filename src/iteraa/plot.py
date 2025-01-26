@@ -8,7 +8,7 @@ import numpy as np
 import seaborn as sns
 from sklearn.manifold import TSNE
 
-from iaa.constants import RANDOM_STATE, NUM_JOBS, PALETTE, DPI, FIGS_DIR_PATH
+from iteraa.constants import RANDOM_STATE, NUM_JOBS, PALETTE, DPI, FIGS_DIR_PATH
  
 
 # def ternaryPlot(data, scaling=True, startAngle=90, rotateLabels=True,

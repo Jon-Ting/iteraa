@@ -11,8 +11,8 @@ from sklearn.metrics import explained_variance_score
 from sklearn.model_selection import KFold
 from spams import archetypalAnalysis
 
-from iaa.constants import RANDOM_STATE, NUM_JOBS, PALETTE, DPI, SUBSETS_PICKLES_PATH, OUTPUTS_PICKLES_PATH, JOBSCRIPTS_DIR_PATH, AA_SCRIPT_PATH
-from iaa.iaa import ArchetypalAnalysis
+from iteraa.constants import RANDOM_STATE, NUM_JOBS, PALETTE, DPI, SUBSETS_PICKLES_PATH, OUTPUTS_PICKLES_PATH, JOBSCRIPTS_DIR_PATH, AA_SCRIPT_PATH
+from iteraa.iaa import ArchetypalAnalysis
 
 
 def subsetSplit(X, nSubsets, dataName, subsetsSampleIdxs=[], subsetsPicklesPath=SUBSETS_PICKLES_PATH, postfixStr='',

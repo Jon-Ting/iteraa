@@ -22,8 +22,8 @@ from sklearn.metrics import explained_variance_score
 from sklearn.model_selection import KFold
 from spams import archetypalAnalysis
 
-from iaa.constants import RANDOM_STATE, DPI, FIGS_DIR_PATH
-from iaa.utils import ecdf, calcSSE, explainedVariance, solveConstrainedNNLS, furthestSum
+from iteraa.constants import RANDOM_STATE, DPI, FIGS_DIR_PATH
+from iteraa.utils import ecdf, calcSSE, explainedVariance, solveConstrainedNNLS, furthestSum
 
 
 class ArchetypalAnalysis():

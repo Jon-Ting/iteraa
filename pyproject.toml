@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "iaa"
+name = "iteraa"
 version = "0.1.0"
 description = "A package to conduct accelerated archetypal analysis with an iterative approach."
 authors = ["Jonathan Yik Chang Ting"]
