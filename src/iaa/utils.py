@@ -1,5 +1,4 @@
 import numpy as np
-from numpy.matlib import repmat
 from scipy.optimize import nnls
 from sklearn.metrics import explained_variance_score
 
@@ -176,8 +175,8 @@ def furthestSum(K, noc, i, exclude=[]):
             Kt = K
             K = np.dot(Kt.T, Kt)
             K = np.lib.scimath.sqrt(
-                repmat(np.diag(K), J, 1) - 2 * K + \
-                repmat(np.mat(np.diag(K)).T, 1, J)
+                np.tile(np.diag(K), (J, 1)) - 2 * K + \
+                np.tile(np.mat(np.diag(K)).T, (1, J))
             )
 
         Kt2 = np.diag(K)  # Horizontal
