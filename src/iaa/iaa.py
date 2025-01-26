@@ -660,7 +660,7 @@ class ArchetypalAnalysis():
             plt.savefig(f"{FIGS_DIR_PATH}/{figNamePrefix}_A{i+1}_featProf.png", bbox_inches='tight')
             
     
-    def plotRadarProfile(self, allFeatNames=None, featIDs=[0], archIDs=[0, 1], fillAlpha=0.2, linewidth=1,
+    def plotRadarProfile(self, allFeatNames=None, featIDs=[0], archIDs=[0, 1], fillAlpha=0.2, linewidth=1, ncol=1,
                          sepArchs=False, showLabel=True, labelAll=False, showName=False, closeFig=False, showLegend=True, 
                          figSize=(6, 6), dpi=DPI, title=None, figNamePrefix=''):
         if len(archIDs) == 0: 
@@ -710,7 +710,7 @@ class ArchetypalAnalysis():
                     plt.close()
         if not sepArchs:
             if showLegend:
-                ax.legend(legend, loc='center', bbox_to_anchor=(1.2, 0.5), ncol=1)
+                ax.legend(legend, loc='center', bbox_to_anchor=(0.5, -0.3), ncol=ncol)   # (1.2, 0.5)
             plt.savefig(f"{FIGS_DIR_PATH}/{figNamePrefix}_radarProf.png", bbox_inches='tight')
         
     
