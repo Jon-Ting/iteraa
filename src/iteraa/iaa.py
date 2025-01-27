@@ -117,7 +117,7 @@ class ArchetypalAnalysis():
         startTime = time()
         if self.iterative:
             # Split data into subsets and conduct archetypal analysis on each of them
-            if len(subsetsSampleIdxs) == 0:
+            if len(self.subsetsSampleIdxs) == 0:
                 kFold = KFold(n_splits=self.nSubsets, shuffle=self.shuffle, random_state=self.randomState)
                 self.subsetsSampleIdxs = [idxs for (_, idxs) in kFold.split(X)]
             subsetsAs, subsetsBs = [], []
