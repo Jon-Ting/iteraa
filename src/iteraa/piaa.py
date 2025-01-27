@@ -23,6 +23,22 @@ def subsetSplit(X, nSubsets, dataName, subsetsSampleIdxs=[], subsetsPicklesPath=
     ----------
     X : numpy.ndarray
         Whole data set.
+    numSubset : int
+        Number of subsets.
+    subsetsSampleIdxs : list[int]
+        Identifiers for subset samples.
+    dataName : str
+        Name of dataset.
+    subsetsPicklesPath : str
+        Path to directory containing data subset pickle files.
+    postfixStr : str
+        Postfix name.
+    shuffle : bool
+        Whether to shuffle data.
+    randomState : int
+        Random seed.
+    verbose : bool
+        Whether information is printed.
 
     Returns
     -------
@@ -57,6 +73,33 @@ def submitAAjobs(nArchetypes, dataName, splitKeyword='data', postfixStr='',
                  AAscriptPath=AA_SCRIPT_PATH,
                  project='q27', queue='normal', numCPUs=48, wallTime='00:05:00', mem=5, jobFS=1, email='Jonathan.Ting@anu.edu.au',
                  verbose=False):
+    """Submit jobs of executing individual archetypal analysis to a job scheduler.
+
+    Parameters
+    ----------
+    X : numpy.ndarray
+        Whole data set.
+    dataName : str
+        Name of dataset.
+    splitKeyword : str
+        Keyword for data subsets.
+    postfixStr : str
+        Postfix name.
+    jobscriptsPicklesPath : str
+        Path to directory containing data jobscript files.
+    subsetsPicklesPath : str
+        Path to directory containing data subset pickle files.
+    outputsPicklesPath : str
+        Path to directory containing data output pickle files.
+    AAscriptPath : str
+        Path to script to run archetypal analysis.
+    verbose : bool
+        Whether information is printed.
+
+    Returns
+    -------
+    None
+    """
     subsetsPickles = [fName for fName in listdir(subsetsPicklesPath) 
                       if isfile(f"{subsetsPicklesPath}/{fName}") and f"{dataName}{splitKeyword}" in fName and f"{postfixStr}.pkl" in fName]
     if verbose:
@@ -88,6 +131,28 @@ def runAA(fName, nArchetypes, outputsPicklesPath=OUTPUTS_PICKLES_PATH, splitKeyw
     ----------
     fName : str
         Path to pickle file containing data.
+    nArchetypes : int
+        Number of archetypes.
+    outputsPicklesPath : str
+        Path to directory containing output pickle files.
+    splitKeyword : str
+        Keyword for data subsets.
+    robust : bool
+        Whether to use robust archetypal analysis.
+    tolerance: float
+        Tolerance.
+    computeXtX : bool
+        Whether to compute XtX.
+    stepsFISTA : int
+        Number of FISTA steps.
+    stepsAS : int
+        Number of active subset steps.
+    randominit : bool
+        Whether to initialise randomly.
+    numThreads : int
+        Number of threads for algorithm execution.
+    onlyZ : bool
+        Whether to stop early by returning only Z matrix.
 
     Returns
     -------
@@ -121,6 +186,42 @@ def fitPIAA(X, nArchetypes, numSubset, dataName, outputsPicklesPath=OUTPUTS_PICK
     ----------
     X : numpy.ndarray
         Whole data set.
+    nArchetypes : int
+        Number of archetypes.
+    numSubset : int
+        Number of subsets.
+    dataName : str
+        Name of dataset.
+    outputsPicklesPath : str
+        Path to directory containing output pickle files.
+    postfixStr : str
+        Postfix name.
+    shuffle : bool
+        Whether to shuffle data.
+    robust : bool
+        Whether to use robust archetypal analysis.
+    onlyZ : bool
+        Whether to stop early by returning only Z matrix.
+    C : float
+        C.
+    tolerance: float
+        Tolerance.
+    computeXtX : bool
+        Whether to compute XtX.
+    stepsFISTA : int
+        Number of FISTA steps.
+    stepsAS : int
+        Number of active subset steps.
+    randominit : bool
+        Whether to initialise randomly.
+    randomState : int
+        Random seed.
+    numThreads : int
+        Number of threads for algorithm execution.
+    splitRuntime : float
+        Execution duration for splitting of data into subsets (seconds)
+    verbose : bool
+        Whether information is printed.
 
     Returns
     -------
