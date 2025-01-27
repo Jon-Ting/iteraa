@@ -2,18 +2,6 @@ from importlib.resources import files
 from os import listdir
 
 
-def getExampleSquareDataPath():
-    """Get path to an example csv file (uniform square distribution).
-
-    Returns
-    -------
-    csvFilePath : str
-        Path to csv file.
-    """
-    csvFilePath = str(files('iteraa.data').joinpath('uniformSquare.csv'))
-    return csvFilePath
-
-
 def getExampleBlobDataPath():
     """Get path to an example csv file (circle distribution).
 
@@ -23,6 +11,18 @@ def getExampleBlobDataPath():
         Path to csv file.
     """
     csvFilePath = str(files('iteraa.data').joinpath('blob.csv'))
+    return csvFilePath
+
+
+def getExampleSquareDataPath():
+    """Get path to an example csv file (uniform square distribution).
+
+    Returns
+    -------
+    csvFilePath : str
+        Path to csv file.
+    """
+    csvFilePath = str(files('iteraa.data').joinpath('uniformSquare.csv'))
     return csvFilePath
 
 
