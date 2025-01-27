@@ -1,8 +1,8 @@
-# Iterative Archetypal Analysis (IAA)
+# Iterative Archetypal Analysis (IterAA)
 
 ## Description
 
-`IAA` is a package that provides functionalities to conduct accelerated archetypal analysis via an iterative approach.
+`IterAA` is a package that provides functionalities to conduct accelerated archetypal analysis via an iterative approach.
 
 ## Background
 * Archetypal analysis is an unsupervised learning technique that uses a convex polytope to summarise multivariate data.
@@ -17,20 +17,16 @@
 
 ## Installation
 
-Use `pip` or `conda` to install `IAA`:
+Use `pip` to install `IAA`:
 
 ```bash
-$ pip install iaa
-```
-
-```bash
-$ conda install -c conda-forge iaa
+$ pip install iteraa
 ```
 
 ## Usage
 
 ```python
-from iaa import ArchetypalAnalysis
+from iteraa import ArchetypalAnalysis
 
 X = getExampleData()  # Replace with your data
 aa = ArchetypalAnalysis()
