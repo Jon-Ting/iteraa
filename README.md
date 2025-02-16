@@ -17,7 +17,7 @@
 
 ## Installation
 
-Use `pip` to install `IAA`:
+Use `pip` to install `IterAA`:
 
 ```bash
 $ pip install iteraa
@@ -26,11 +26,27 @@ $ pip install iteraa
 ## Usage
 
 ```python
-from iteraa import ArchetypalAnalysis
+from iteraa import getExampleBlobData, ArchetypalAnalysis
 
-X = getExampleData()  # Replace with your data
-aa = ArchetypalAnalysis()
+X = getExampleBlobData()  # Replace with your data
+numArch = 3
+aa = ArchetypalAnalysis(nArchetypes=numArch)
 aa.fit(X)
+aa.archetypes  # Archetypes
+aa.explainedVariance_  # Explained variance
+
+# Simplex plot
+archIDs=range(numArch)
+aa.plotSimplex(aa.alfa, archIDs)
+
+# Profile plots
+featNames, featIDs = X.columns(), range(len(X.columns))
+aa.plotProfile(featNames, featIDs, archIDs)
+aa.plotRadarProfile(featNames, featIDs, archIDs)
+
+# Most archetypal samples
+aa._extractCloseMatch()
+aa.plotCloseMatch(archIDs)
 ```
 
 Check out the notebooks for demonstrations of the [iterative](https://github.com/Jon-Ting/iaa/blob/main/docs/iaaDemo.ipynb) and [parallel iterative](https://github.com/Jon-Ting/iaa/blob/main/docs/piaaDemo.ipynb) approaches.
@@ -41,7 +57,7 @@ Detailed [documentations](https://iaa.readthedocs.io/en/latest/) are hosted by `
 
 ## Contributing
 
-`IAA` appreciates your enthusiasm and welcomes your expertise!
+`IterAA` appreciates your enthusiasm and welcomes your expertise!
 
 Please check out the [contributing guidelines](https://github.com/Jon-Ting/iaa/blob/main/CONTRIBUTING.md) and [code of conduct](https://github.com/Jon-Ting/iaa/blob/main/CONDUCT.md). 
 By contributing to this project, you agree to abide by its terms.
