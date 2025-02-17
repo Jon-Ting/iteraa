@@ -16,7 +16,7 @@ def getExampleBlobData(numSamples):
     Xscaled : np.ndarray
         Scaled dataset.
     """
-    X, _ = make_blobs(n_samples=NUM_SAMPLES, centers=1, cluster_std=30, random_state=0)
+    X, _ = make_blobs(n_samples=numSamples, centers=1, cluster_std=30, random_state=0)
     sc = StandardScaler()
     Xscaled = sc.fit_transform(X)
     return Xscaled
