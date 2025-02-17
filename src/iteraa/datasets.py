@@ -39,12 +39,12 @@ def getExampleSquareData(numSamples):
 
 
 def getCaseStudyData():
-    """Get paths to the csv files used for case study (mono-, bi-, and trimetallic nanoparticles).
+    """Get case study data set (skeleton).
 
     Returns
     -------
-    csvFilePaths : list of str
-        Paths to csv files.
+    Xscaled : np.ndarray
+        Scaled dataset.
     """
     # Load the data
     r = requests.get('http://jse.amstat.org/datasets/body.dat.txt')
