@@ -4,4 +4,4 @@
 
 ## v0.1.0 (04/07/2024)
 
-- First release of `iaa`!
+- First release of `iteraa`!

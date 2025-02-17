@@ -6,7 +6,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = u"iaa"
+project = u"iteraa"
 copyright = u"2024, Jonathan Yik Chang Ting"
 author = u"Jonathan Yik Chang Ting"
 

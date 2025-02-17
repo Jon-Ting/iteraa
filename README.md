@@ -49,7 +49,7 @@ aa._extractCloseMatch()
 aa.plotCloseMatch(archIDs)
 ```
 
-Check out the notebooks for demonstrations of the [iterative](https://github.com/Jon-Ting/iaa/blob/main/docs/iaaDemo.ipynb) and [parallel iterative](https://github.com/Jon-Ting/iaa/blob/main/docs/piaaDemo.ipynb) approaches.
+Check out the notebooks for demonstrations of the [iterative](https://github.com/Jon-Ting/iteraa/blob/main/docs/iaaDemo.ipynb) and [parallel iterative](https://github.com/Jon-Ting/iteraa/blob/main/docs/piaaDemo.ipynb) approaches.
 
 ## Documentation
 
@@ -59,7 +59,7 @@ Detailed [documentations](https://iaa.readthedocs.io/en/latest/) are hosted by `
 
 `IterAA` appreciates your enthusiasm and welcomes your expertise!
 
-Please check out the [contributing guidelines](https://github.com/Jon-Ting/iaa/blob/main/CONTRIBUTING.md) and [code of conduct](https://github.com/Jon-Ting/iaa/blob/main/CONDUCT.md). 
+Please check out the [contributing guidelines](https://github.com/Jon-Ting/iteraa/blob/main/CONTRIBUTING.md) and [code of conduct](https://github.com/Jon-Ting/iteraa/blob/main/CONDUCT.md). 
 By contributing to this project, you agree to abide by its terms.
 
 ## License
