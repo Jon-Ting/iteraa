@@ -43,10 +43,10 @@ If you are proposing a feature:
 Ready to contribute? Here's how to set up `iteraa` for local development.
 
 1. Download a copy of `iteraa` locally.
-2. Install `iteraa` using `poetry`:
+2. Install `iteraa` using `uv`:
 
     ```console
-    $ poetry install
+    $ uv sync --all-groups
     ```
 
 3. Use `git` (or similar) to create a branch for local development and make your changes:
