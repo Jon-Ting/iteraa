@@ -1,195 +1,177 @@
+
 import numpy as np
 from scipy.optimize import nnls
+from scipy.spatial.distance import cdist
 from sklearn.metrics import explained_variance_score
 
 
+def findFurthestPoint(xSearch: np.ndarray, xRef: np.ndarray) -> tuple[np.ndarray, int]:
+    """Finds a data point in xSearch that is furthest from all points in xRef.
 
-def findFurthestPoint(xSearch, xRef):
+    In the context of archetypal analysis, xRef is typically the set of archetypes
+    and xSearch is the dataset.
+
+    Args:
+        xSearch: The dataset to search for the furthest point. Shape: (nData, nDim).
+        xRef: The reference points to calculate distances from. Shape: (nRef, nDim).
+
+    Returns:
+        A tuple containing the furthest point (ndarray) and its index in xSearch (int).
     """
-    This function finds a data point in x_search which has the furthest 
-    distance from all data points in xRef. In the case of archetypes,
-    xRef is the archetypes and xSearch is the dataset.
-    
-    Note:
-        In both xSearch and xRef, the columns of the arrays should be the
-        dimensions and the rows should be the data points.
-    """
-    from scipy.spatial.distance import cdist
     D = cdist(xRef, xSearch)
     Dsum = D.sum(axis=0)
     idxmax = np.argmax(Dsum)
-    return xSearch[idxmax,:], idxmax
+    return xSearch[idxmax, :], int(idxmax)
 
 
-def ecdf(X, x):
-    """Emperical Cumulative Distribution Function
-    
-    X: 
-        1-D array. Vector of data points per each feature (dimension), defining
-        the distribution of data along that specific dimension.
-        
-    x:
-        Value. It is the value of the corresponding dimension of an archetype.
-        
-    P(X <= x):
-        The cumulative distribution of data points with respect to the archetype
-        (the probablity or how much of data in a specific dimension is covered
-        by the archetype).
+def ecdf(X: np.ndarray, x: float) -> float:
+    """Empirical Cumulative Distribution Function.
+
+    Args:
+        X: 1-D array of data points for a single feature, defining its distribution.
+        x: The value to evaluate the ECDF at (e.g., an archetype component).
+
+    Returns:
+        The probability P(X <= x), representing how much of the data is covered by x.
     """
-    return float(len(X[X < x]) / len(X))
+    return float(len(X[x > X]) / len(X))
 
 
-def calcSSE(Xact, Xapx):
+def calcSSE(Xact: np.ndarray, Xapx: np.ndarray) -> float:
+    """Calculates the Sum of Square Errors (SSE).
+
+    Args:
+        Xact: The actual data points.
+        Xapx: The approximated data points.
+
+    Returns:
+        The sum of squared differences between Xact and Xapx.
     """
-    This function returns the Sum of Square Errors.
+    return float(((Xact - Xapx) ** 2).sum())
+
+
+def calcSST(Xact: np.ndarray) -> float:
+    """Calculates the Total Sum of Squares (SST).
+
+    Args:
+        Xact: The actual data points.
+
+    Returns:
+        The sum of squared values of Xact.
     """
-    return ((Xact - Xapx) ** 2).sum()
+    return float((Xact**2).sum())
 
 
-def calcSST(Xact):
+def explainedVariance(Xact: np.ndarray, Xapx: np.ndarray, method: str = "sklearn") -> float:
+    """Calculates the explained variance.
+
+    Args:
+        Xact: The actual data points. Shape: (nDim, nData).
+        Xapx: The approximated data points. Shape: (nDim, nData).
+        method: The method to use ('sklearn' or 'classic'). Defaults to 'sklearn'.
+
+    Returns:
+        The explained variance score.
     """
-    This function returns the Sum of Square Errors.
+    if method.lower() == "sklearn":
+        # sklearn expects (n_samples, n_features), our data is (nDim, nData)
+        return float(explained_variance_score(Xact.T, Xapx.T))
+    SSE = calcSSE(Xact, Xapx)
+    SST = calcSST(Xact)
+    return float((SST - SSE) / SST)
+
+
+def solveConstrainedNNLS(u: np.ndarray, t: np.ndarray, C: float) -> tuple[np.ndarray, float]:
+    """Solves ||u - t@w||^2 subject to w >= 0 and sum(w) = 1.
+
+    The sum-to-one constraint is approximated by augmenting the system with a row
+    of ones scaled by C.
+
+    Args:
+        u: The target vector. Shape: (mObservation,).
+        t: The design matrix. Shape: (mObservation, nVariables).
+        C: The scaling factor for the sum-to-one constraint.
+
+    Returns:
+        A tuple containing the solution vector w and the residual norm.
     """
-    return (Xact ** 2).sum()
+    _, nVariables = t.shape
+    # Scaling the observation and design matrix
+    u_scaled = u * C
+    t_scaled = t * C
+    # Adding the sum-to-one constraint equation
+    u_aug = np.append(u_scaled, [C], axis=0)
+    t_aug = np.append(t_scaled, np.full((1, nVariables), C), axis=0)
+    w, rnorm = nnls(t_aug, u_aug)
+    return w, float(rnorm)
 
 
-def explainedVariance(Xact, Xapx, method='sklearn'):
-    if method.lower() == 'sklearn':  
-        return explained_variance_score(Xact.T, Xapx.T)
-    else:
-        SSE = calcSSE(Xact, Xapx)
-        SST = calcSST(Xact)
-        return (SST - SSE) / SST
-        
-        
-def solveConstrainedNNLS(u, t, C):
+def furthestSum(
+    K: np.ndarray, noc: int, i: list[int], exclude: np.ndarray | list[int] = []
+) -> list[int]:
+    """Furthest sum algorithm to efficiently generate initial seeds for archetypes.
+
+    This function is based on the implementation from py_pcha by Ulf Aslak Jensen.
+    Note: It handles transposed shapes (dimensions, examples) internally if needed.
+
+    Args:
+        K: Data matrix or kernel matrix. Shape: (I, J).
+        noc: Number of candidate archetypes to extract.
+        i: List of initial observation indices to start the search.
+        exclude: Indices in K that cannot be used as candidates.
+
+    Returns:
+        A list of indices for the extracted candidate archetypes.
     """
-    This function solves the typical equation of ||U - TW||^2 where U and T are
-    defined and W should be determined such that the above expression is 
-    minimised. Further, solution of W is subjected to the following constraints:
-        
-        Constraint 1:       W >= 0
-        Constraint 2:       sum(W) = 1
-    
-    Note that the above equation is a typical equation in solving alfa's and
-    beta's.
-    
-    
-    Solving for ALFA's:
-    -------------------
-    when solving for alfa's the following equation should be minimised:
-        
-        ||Xi - sum([alfa]ik x Zk)|| ^ 2.
-    
-    This equation should be minimised for each data point (i.e. nData is the
-    number of equations), which results in nData rows of alfa's. In each 
-    equation U, T, and W have the following dimensions:
-        
-    Equation (i):
-        
-        U (Xi):         It is a 1D-array of nDim x 1 dimension.
-        T (Z):          It is a 2D-array of nDim x k dimension.
-        W (alfa):       It is a 1D-array of k x 1 dimension.
-    
-    
-    Solving for BETA's:
-    -------------------   
-    """
-    mObservation, nVariables = t.shape
-    # EMPHASIZING THE CONSTRAINT
-    u = u * C
-    t = t * C   
-    # ADDING THE CONSTRAINT EQUATION
-    u = np.append(u, [1], axis = 0)
-    t = np.append(t, np.ones([1,nVariables]), axis = 0)
-    w, rnorm = nnls(t, u)
-    return w, rnorm
 
-
-def furthestSum(K, noc, i, exclude=[]):
-    """
-    Note by Benyamin Motevalli:
-        
-        This function was taken from the following address:
-            https://github.com/ulfaslak/py_pcha
-            
-        and the original author is: Ulf Aslak Jensen.
-    """
-    
-    """
-    Original Note:
-        
-    Furthest sum algorithm, to efficiently generat initial seed/archetypes.
-
-    Note: Commonly data is formatted to have shape (examples, dimensions).
-    This function takes input and returns output of the transposed shape,
-    (dimensions, examples).
-    
-    Parameters
-    ----------
-    K : numpy 2d-array
-        Either a data matrix or a kernel matrix.
-
-    noc : int
-        Number of candidate archetypes to extract.
-
-    i : int
-        inital observation used for to generate the FurthestSum.
-
-    exclude : numpy.1darray
-        Entries in K that can not be used as candidates.
-
-    Output
-    ------
-    i : int
-        The extracted candidate archetypes
-    """
     def maxIndVal(l):
         return max(zip(range(len(l)), l), key=lambda x: x[1])
 
     I, J = K.shape
-    index = np.array(range(J))
-    index[exclude] = 0
-    index[i] = -1
-    indT = i
-    sumDist = np.zeros((1, J), np.complex128)
+    index = np.arange(J)
+    if len(exclude) > 0:
+        index[exclude] = 0
 
-    if J > noc * I:
+    # Mark initial indices as used
+    for idx in i:
+        index[idx] = -1
+
+    indT = i[-1]
+    sumDist = np.zeros((1, J))
+
+    if noc * I < J:
         Kt = K
         Kt2 = np.sum(Kt**2, axis=0)
         for k in range(1, noc + 11):
             if k > noc - 1:
                 Kq = np.dot(Kt[:, i[0]], Kt)
-                sumDist -= np.lib.scimath.sqrt(Kt2 - 2 * Kq + Kt2[i[0]])
+                sumDist -= np.sqrt(np.maximum(Kt2 - 2 * Kq + Kt2[i[0]], 0))
                 index[i[0]] = i[0]
                 i = i[1:]
             t = np.where(index != -1)[0]
             Kq = np.dot(Kt[:, indT].T, Kt)
-            sumDist += np.lib.scimath.sqrt(Kt2 - 2 * Kq + Kt2[indT])
-            ind, val = maxIndVal(sumDist[:, t][0].real)
+            sumDist += np.sqrt(np.maximum(Kt2 - 2 * Kq + Kt2[indT], 0))
+            ind, _ = maxIndVal(sumDist[:, t][0])
             indT = t[ind]
             i.append(indT)
             index[indT] = -1
     else:
-        if I != J or np.sum(K - K.T) != 0:  # Generate kernel if K not one
+        if I != J or not np.array_equal(K, K.T):  # Generate kernel if K not square/symmetric
             Kt = K
             K = np.dot(Kt.T, Kt)
-            K = np.lib.scimath.sqrt(
-                np.tile(np.diag(K), (J, 1)) - 2 * K + \
-                np.tile(np.mat(np.diag(K)).T, (1, J))
-            )
+            diagK = np.diag(K)
+            K = np.sqrt(np.maximum(np.tile(diagK, (J, 1)) - 2 * K + np.tile(diagK, (J, 1)).T, 0))
 
-        Kt2 = np.diag(K)  # Horizontal
+        Kt2 = np.diag(K)
         for k in range(1, noc + 11):
             if k > noc - 1:
-                sumDist -= np.lib.scimath.sqrt(Kt2 - 2 * K[i[0], :] + Kt2[i[0]])
+                sumDist -= np.sqrt(np.maximum(Kt2 - 2 * K[i[0], :] + Kt2[i[0]], 0))
                 index[i[0]] = i[0]
                 i = i[1:]
             t = np.where(index != -1)[0]
-            sumDist += np.lib.scimath.sqrt(Kt2 - 2 * K[indT, :] + Kt2[indT])
-            ind, val = maxIndVal(sumDist[:, t][0].real)
+            sumDist += np.sqrt(np.maximum(Kt2 - 2 * K[indT, :] + Kt2[indT], 0))
+            ind, _ = maxIndVal(sumDist[:, t][0])
             indT = t[ind]
             i.append(indT)
             index[indT] = -1
     return i
-
