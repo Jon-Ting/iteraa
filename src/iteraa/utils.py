@@ -1,3 +1,8 @@
+"""Numerical and statistical utilities for archetypal analysis.
+
+This module provides core mathematical functions including convergence metrics,
+initialization algorithms (Furthest Sum), and constrained optimization wrappers.
+"""
 
 import numpy as np
 from scipy.optimize import nnls
