@@ -15,7 +15,7 @@ dependencies = [
     "pandas>=2.2.2",
     "scikit-learn>=1.5.1",
     "scipy>=1.14.0",
-    "numpy<2.0.0",
+    "numpy>=1.26.4",
     "spams-bin>=2.6.10",
 ]
 
