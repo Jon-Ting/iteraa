@@ -1,12 +1,14 @@
 """
-The IterAA Package
+The Iterative Archetypal Analysis (IterAA) Package
 =====================
 Descriptions
 
 Features
 --------
 Provides
-  1. Plotting functionalities to visualise output.
+  1. Fast iterative approach to archetypal analysis execution
+  2. Plotting functionalities to visualise output.
+  3. Parallel execution on HPC systems.
 
 Documentations
 --------------
@@ -33,16 +35,25 @@ __version__
     Return IterAA version string.
 """
 
-# read version from installed package
 from importlib.metadata import version
-__version__ = version('iteraa')
 
-# Populate package namespace
-__all__ = ['constants', 'datasets', 'utils', 'plot', 'iaa', 'piaa']
-from iteraa.constants import RANDOM_STATE, NUM_JOBS, PALETTE, DPI, SUBSETS_PICKLES_PATH, OUTPUTS_PICKLES_PATH, FIGS_DIR_PATH
-from iteraa.datasets import getExampleBlobData, getExampleSquareData, getCaseStudyData
-from iteraa.utils import explainedVariance 
-from iteraa.plot import plotRadarDatapoints, createSimplexAx, mapAlfaToSimplex, plotTSNE
+from iteraa import datasets, plot, utils
 from iteraa.iaa import ArchetypalAnalysis
-from iteraa.piaa import subsetSplit, submitAAjobs, runAA, fitPIAA
+from iteraa.piaa import fitPIAA, runAA, submitAAjobs, subsetSplit
 
+try:
+    __version__ = version("iteraa")
+except Exception:
+    __version__ = "1.0.0"
+
+__all__ = [
+    "ArchetypalAnalysis",
+    "__version__",
+    "datasets",
+    "fitPIAA",
+    "plot",
+    "runAA",
+    "submitAAjobs",
+    "subsetSplit",
+    "utils",
+]
