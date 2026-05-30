@@ -26,27 +26,29 @@ $ pip install iteraa
 ## Usage
 
 ```python
-from iteraa import getExampleBlobData, ArchetypalAnalysis
+import numpy as np
+from iteraa import ArchetypalAnalysis, datasets, plot
 
-X = getExampleBlobData()  # Replace with your data
+X = datasets.getExampleBlobData(100)  # Replace with your data
 numArch = 3
 aa = ArchetypalAnalysis(nArchetypes=numArch)
 aa.fit(X)
-aa.archetypes  # Archetypes
-aa.explainedVariance_  # Explained variance
 
+# Results
+print(f"Explained Variance: {aa.explainedVariance_:.3f}")
+print(aa.archetypes_)  # Archetypes matrix (nDim, nArch)
+
+# Visualisation
 # Simplex plot
-archIDs=range(numArch)
-aa.plotSimplex(aa.alfa, archIDs)
+plot.plotSimplex(aa, aa.alfa_, archIDs=range(numArch))
 
 # Profile plots
-featNames, featIDs = X.columns(), range(len(X.columns))
-aa.plotProfile(featNames, featIDs, archIDs)
-aa.plotRadarProfile(featNames, featIDs, archIDs)
+featNames = ["Feature 1", "Feature 2"]
+plot.plotProfile(aa, allFeatNames=featNames, featIDs=[0, 1], archIDs=range(numArch))
+plot.plotRadarProfile(aa, allFeatNames=featNames, featIDs=[0, 1], archIDs=range(numArch))
 
 # Most archetypal samples
-aa._extractCloseMatch()
-aa.plotCloseMatch(archIDs)
+plot.plotCloseMatch(aa, archIDs=range(numArch))
 ```
 
 Check out the notebooks for demonstrations of the [iterative](https://github.com/Jon-Ting/iteraa/blob/main/docs/iaaDemo.ipynb) and [parallel iterative](https://github.com/Jon-Ting/iteraa/blob/main/docs/piaaDemo.ipynb) approaches.
@@ -54,6 +56,12 @@ Check out the notebooks for demonstrations of the [iterative](https://github.com
 ## Documentation
 
 Detailed [documentations](https://iaa.readthedocs.io/en/latest/) are hosted by `Read the Docs`.
+
+## Future Work
+
+- **HPC Logic Abstraction:** Abstract PBS-specific logic in `piaa.py` to support other schedulers (Slurm, etc.).
+- **Numeric Stability:** Investigate alternatives to the matrix augmentation hack in `solveConstrainedNNLS`.
+- **Robust Backends:** Offer pure-Python or Scikit-learn based fallbacks for `SPAMS`.
 
 ## Contributing
 
