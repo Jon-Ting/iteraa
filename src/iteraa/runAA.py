@@ -1,44 +1,36 @@
-import pickle
-import sys
-from time import time
+"""Standalone script for running Archetypal Analysis on a data subset.
 
-import numpy as np
-from spams import archetypalAnalysis
+This script is intended to be called by HPC job schedulers.
+"""
 
+import argparse
 
-
-def runAA(fName, nArchetypes, outputsPicklesPath='.', splitKeyword='data',
-          robust=False, tolerance=0.001, computeXtX=False, stepsFISTA=3, stepsAS=50, 
-          randominit=False, numThreads=-1, onlyZ=False):
-    """Executes archetypal analysis.
-
-    Parameters
-    ----------
-    fName : str
-        Path to pickle file containing data.
-
-    Returns
-    -------
-    None
-    """
-    startTime = time()
-    with open(fName, 'rb') as f:
-        idxs, subsetX = pickle.load(f)
-    subsetZ, subsetA, subsetB = archetypalAnalysis(np.asfortranarray(subsetX), Z0=None, p=nArchetypes, 
-                                                      returnAB=True, robust=robust, epsilon=tolerance, computeXtX=computeXtX, 
-                                                      stepsFISTA=stepsFISTA, stepsAS=stepsAS, randominit=randominit, 
-                                                      numThreads=numThreads)
-    dataName = fName.split('/')[-1].split(splitKeyword)[0]
-    subsetID = fName.split(splitKeyword)[-1].split('.pkl')[0]
-    outputsDict = {'subsetZ': subsetZ, 'runTime': time() - startTime}
-    if not onlyZ:    
-        outputsDict['subsetA'] = subsetA.toarray()
-        outputsDict['subsetB'] = subsetB.toarray()
-        outputsDict['subsetsSampleIdxs'] = idxs
-    with open(f"{outputsPicklesPath}/{dataName}output{subsetID}.pkl", 'wb') as f:
-        pickle.dump(outputsDict, f)
+from iteraa.piaa import runAA
 
 
-if __name__ == '__main__':
-    runAA(fName=sys.argv[1], nArchetypes=int(sys.argv[2]), outputsPicklesPath=sys.argv[3], splitKeyword=sys.argv[4])
+def main():
+    """Main entry point for the iteraa-run-AA console script."""
+    parser = argparse.ArgumentParser(description="Run Archetypal Analysis on a data subset.")
+    parser.add_argument("fName", type=str, help="Path to subset pickle file")
+    parser.add_argument("nArchetypes", type=int, help="Number of archetypes")
+    parser.add_argument("outputsPicklesPath", type=str, help="Path to save output pickles")
+    parser.add_argument("splitKeyword", type=str, default="data", help="Keyword for data subsets")
+    parser.add_argument("--robust", action="store_true", help="Use robust AA")
+    parser.add_argument("--tolerance", type=float, default=0.001, help="Convergence tolerance")
+    parser.add_argument("--onlyZ", action="store_true", help="Only return Z matrix")
 
+    args = parser.parse_args()
+
+    runAA(
+        fName=args.fName,
+        nArchetypes=args.nArchetypes,
+        outputsPicklesPath=args.outputsPicklesPath,
+        splitKeyword=args.splitKeyword,
+        robust=args.robust,
+        tolerance=args.tolerance,
+        onlyZ=args.onlyZ,
+    )
+
+
+if __name__ == "__main__":
+    main()
