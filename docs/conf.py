@@ -6,9 +6,9 @@
 
 # -- Project information -----------------------------------------------------
 
-project = u"iteraa"
-copyright = u"2024, Jonathan Yik Chang Ting"
-author = u"Jonathan Yik Chang Ting"
+project = "iteraa"
+copyright = "2024, Jonathan Yik Chang Ting"
+author = "Jonathan Yik Chang Ting"
 
 # -- General configuration ---------------------------------------------------
 
