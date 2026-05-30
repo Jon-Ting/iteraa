@@ -141,5 +141,13 @@ dmypy.json
 # MacOS
 .DS_Store
 
+# Artefacts
 docs/data/*
 docs/jobScripts/*
+
+# AI Assistants
+.agents/
+.antigravitycli/
+.codex
+.continue/
+.qodo/
