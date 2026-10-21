@@ -7,14 +7,14 @@ authors = [
 ]
 license = {text = "MIT"}
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 dependencies = [
     "matplotlib>=3.9.1",
     "seaborn>=0.13.2",
     "natsort>=8.4.0",
     "pandas>=2.2.2",
     "scikit-learn>=1.5.1",
-    "scipy>=1.12.0",
+    "scipy>=1.14.0",
     "numpy>=1.26.4",
     "spams-bin>=2.6.10",
 ]
