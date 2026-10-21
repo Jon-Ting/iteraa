@@ -4,6 +4,8 @@ This module provides functions for generating synthetic datasets (blobs, squares
 and retrieving real-world case study data for archetypal analysis.
 """
 
+from __future__ import annotations
+
 import numpy as np
 import pandas as pd
 import requests

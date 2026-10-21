@@ -4,6 +4,8 @@ This module provides the ArchetypalAnalysis class for conducting archetypal anal
 based on "Archetypal Analysis" by Adele Cutler and Leo Breiman (1994).
 """
 
+from __future__ import annotations
+
 from time import time
 
 import numpy as np

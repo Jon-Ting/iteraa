@@ -4,6 +4,8 @@ This module provides core mathematical functions including convergence metrics,
 initialization algorithms (Furthest Sum), and constrained optimization wrappers.
 """
 
+from __future__ import annotations
+
 import numpy as np
 from scipy.optimize import nnls
 from scipy.spatial.distance import cdist

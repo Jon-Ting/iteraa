@@ -7,14 +7,14 @@ authors = [
 ]
 license = {text = "MIT"}
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.9"
 dependencies = [
     "matplotlib>=3.9.1",
     "seaborn>=0.13.2",
     "natsort>=8.4.0",
     "pandas>=2.2.2",
     "scikit-learn>=1.5.1",
-    "scipy>=1.14.0",
+    "scipy>=1.12.0",
     "numpy>=1.26.4",
     "spams-bin>=2.6.10",
 ]
@@ -36,7 +36,7 @@ dev = [
 
 [tool.ruff]
 line-length = 100
-target-version = "py311"
+target-version = "py39"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "UP", "B", "A", "C4", "SIM", "ARG", "PTH", "RET", "RUF"]

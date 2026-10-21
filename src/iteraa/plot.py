@@ -5,6 +5,8 @@ spaces, such as archetype space (simplex, radar plots) and feature space
 (parallel coordinates, feature profiles).
 """
 
+from __future__ import annotations
+
 from os import mkdir
 from os.path import exists
 from typing import Any
