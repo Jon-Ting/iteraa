@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-import requests
 from sklearn.datasets import make_blobs
 from sklearn.preprocessing import StandardScaler
 
@@ -55,6 +54,8 @@ def getCaseStudyData() -> np.ndarray:
     Returns:
         Xscaled: The standardized dataset. Shape: (507, 10).
     """
+    import requests
+
     # Load the data
     r = requests.get("http://jse.amstat.org/datasets/body.dat.txt", timeout=10)
     data = np.array(list(map(lambda x: list(map(float, x.split())), r.text.splitlines())))
