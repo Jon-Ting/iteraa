@@ -219,8 +219,10 @@ class ArchetypalAnalysis:
         overallBs = []
         for i, subsetZ in enumerate(subsetsZs):
             nSubsetZs = subsetZ.shape[1]
-            subsetOverallA = np.matmul(A_final[:, prevIdx : prevIdx + nSubsetZs], subsetsAs[i])
-            subsetOverallB = np.matmul(subsetsBs[i], B_final[prevIdx : prevIdx + nSubsetZs, :])
+            subA = subsetsAs[i].toarray() if hasattr(subsetsAs[i], "toarray") else subsetsAs[i]
+            subB = subsetsBs[i].toarray() if hasattr(subsetsBs[i], "toarray") else subsetsBs[i]
+            subsetOverallA = A_final[:, prevIdx : prevIdx + nSubsetZs] @ subA
+            subsetOverallB = subB @ B_final[prevIdx : prevIdx + nSubsetZs, :]
             prevIdx += nSubsetZs
             overallAs.append(subsetOverallA)
             overallBs.append(subsetOverallB)
