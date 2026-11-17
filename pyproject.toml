@@ -17,6 +17,7 @@ dependencies = [
     "scipy>=1.14.0",
     "numpy>=1.26.4",
     "spams-bin>=2.6.10",
+    "requests>=2.31.0",
 ]
 
 [project.scripts]
